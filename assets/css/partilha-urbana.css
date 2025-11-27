@@ -1,0 +1,22 @@
+.admin-bar .topbar {
+  top: 46px;
+}
+
+@media (min-width: 768px) {
+  .admin-bar .topbar {
+    top: 32px;
+  }
+}
+.sidebar-link svg path {
+  stroke: var(--bs-primary);
+}
+.sidebar-link.active svg path {
+  stroke: white;
+}
+
+.user-profile-name {
+  font-size: 0.875rem;
+  line-height: 1.2em;
+  padding-right: 8px;
+}
+/*# sourceMappingURL=partilha-urbana.css.map */
