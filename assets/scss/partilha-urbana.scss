@@ -1,36 +1,15 @@
-.admin-bar {
-    // padding-top: 46px;
-    .topbar {
-        top: 46px;
-    }
-}
-
-@media (min-width: 768px) {
-    .admin-bar {
-        // padding-top: 32px;
-        .topbar {
-            top: 32px;
-        }
-    }
-}
-
-.sidebar-link {
-    svg {
-        path {
-            stroke: var(--bs-primary);
-        }
-    }
-    &.active {
-        svg {
-            path {
-                stroke: white;
-            }
-        }
-    }
-}
-
-.user-profile-name {
-    font-size: 0.875rem;
-    line-height: 1.2em;
-    padding-right: 8px;
-}
+@use 'colors';
+@use 'wp-admin-bar';
+@use 'single-admin-bar';
+@use 'sidebar';
+@use 'user-profile';
+@use 'btn';
+@use 'help-header-aside';
+@use 'not-found';
+@use 'projeto-item';
+@use 'projeto-status';
+@use 'title';
+@use 'input';
+@use 'table';
+@use 'previsao-lucro-resultado';
+@use 'site-footer';

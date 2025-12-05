@@ -1,0 +1,15 @@
+.projeto-status {
+    border-radius: 4px;
+    padding: 2px 15px;
+    color: var(--bs-white);
+    font-size: 0.75rem;
+    font-weight: 600;
+    background-color: var(--bs-secondary);
+    margin-left: 15px;
+    &.obra {
+        background-color: var(--orange);
+    }
+    &.finalizado {
+        background-color: var(--bs-success);
+    }
+}

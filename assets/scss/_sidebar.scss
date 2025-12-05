@@ -1,0 +1,14 @@
+.sidebar-link {
+    svg {
+        path {
+            stroke: var(--bs-primary);
+        }
+    }
+    &.active {
+        svg {
+            path {
+                stroke: white;
+            }
+        }
+    }
+}

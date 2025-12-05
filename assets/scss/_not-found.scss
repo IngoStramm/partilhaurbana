@@ -1,0 +1,15 @@
+.not-found-container {
+    background-color: var(--almost-white);
+    color: var(--medium-plus-blue);
+    border-radius: 12px;
+    border: 1px solid var(--almost-white);
+    .not-found-message {
+        padding: 30px 20px;
+        margin: 0;
+        color: inherit;
+        font-size: 0.875rem;
+        font-weight: 600;
+        line-height: 1.225rem;
+        letter-spacing: -0.14px;
+    }
+}

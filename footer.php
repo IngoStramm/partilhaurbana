@@ -11,10 +11,11 @@
  */
 
 ?>
-        </div>
-    </div>
+</div>
+</div>
 </div>
 <div class="dark-transparent sidebartoggler"></div>
+<footer class="site-footer"></footer>
 <?php wp_footer(); ?>
 </body>
 

@@ -1,0 +1,21 @@
+.table {
+    > thead {
+        vertical-align: middle;
+    }
+    .with-border {
+        border-top: var(--bs-border-width) solid var(--bs-table-border-color);
+        border-bottom: var(--bs-border-width) solid var(--bs-table-border-color);
+    }
+    .no-border {
+        border: none;
+    }
+    tfoot {
+        tr {
+            &:last-child {
+                td {
+                    border-bottom: none;
+                }
+            }
+        }
+    }
+}

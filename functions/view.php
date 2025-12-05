@@ -40,7 +40,7 @@ function pu_get_icon($name)
 }
 
 /**
- * mi_site_logo_url
+ * pu_site_logo_url
  *
  * @return string
  */
@@ -49,4 +49,67 @@ function pu_site_logo_url()
     $custom_logo_id = get_theme_mod('custom_logo');
     $image = wp_get_attachment_image_src($custom_logo_id, 'full');
     return $image[0];
+}
+
+/**
+ * pu_projecao_lucratividade_item
+ *
+ * @param  string $title
+ * @param  string $field_text
+ * @param  object $field
+ * @param  string $slug
+ * @param  boolean $td
+ * @param  boolean $no_border
+ * @return string
+ */
+function pu_projecao_lucratividade_item($title, $field_text, $field, $slug, $td = true, $no_border = true)
+{
+    $tipo_valor_options = pu_tipo_valor_options();
+    $table_line = $td ? 'td' : 'th';
+    $table_line .= $no_border ? ' class="no-border"' : ' class="with-border"';
+    $input_color = $td ? 'pink-input' : 'green-input';
+    $output = '';
+    $output .= "
+    <tr>
+        <$table_line>$title</$table_line>
+        <$table_line width='200'>
+            <div class='form-group'>
+                <input
+                    type='number'
+                    min='0'
+                    step='1'
+                    id='$slug-valor'
+                    name='$slug-valor'
+                    class='form-control'
+                    value='$field->valor'
+                    aria-label='" . sprintf(__('Valor de %s', 'pu'), $field_text) . "'>
+            </div>
+        </$table_line>
+        <$table_line width='120'>
+            <div class='form-group'>
+                <select class='form-select mr-sm-2' id='$slug-tipo' name='$slug-tipo' aria-label='" . sprintf(__('Tipo do valor de %s', 'pu'), $field_text) . "'>";
+
+    foreach ($tipo_valor_options as $k => $option) {
+        $selected = $field->tipo === $k ? 'selected' : '';
+        $output .= "<option value='$k' $selected>$option</option>";
+    }
+
+    $output .= "
+                </select>
+            </div>
+        </$table_line>
+        <$table_line width='200'>
+            <div class='form-group $input_color'>
+                <input
+                    type='text'
+                    id='$slug-total'
+                    name='$slug-total'
+                    class='form-control money-no-decimals-input'
+                    value='0'
+                    aria-label='" . sprintf(__('Valor total de %s', 'pu'), $field_text) . "'
+                    readonly>
+            </div>
+        </$table_line>
+    </tr>";
+    return $output;
 }

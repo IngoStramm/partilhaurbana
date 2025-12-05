@@ -87,27 +87,26 @@ function pu_pagination($mid = 2, $end = 1, $show = false, $query = null)
                     'end_size'  => $end,
                     'mid_size'  => $mid,
                     'type'      => 'list',
-                    'prev_text' => '<span aria-hidden="true">&laquo;</span>',
-                    'next_text' => '<span aria-hidden="true">&raquo;</span>',
+                    'prev_text' => '<i class="ti ti-chevron-left"></i>',
+                    'next_text' => '<i class="ti ti-chevron-right"></i>',
                 )
             );
 
             // Aplica o HTML/classes CSS do bootstrap
             $pu_paginate_links = paginate_links($arguments);
-            // $pu_paginate_links = str_replace('page-numbers', 'pagination', paginate_links($arguments));
-            // $pu_paginate_links = str_replace('<li>', '<li class="page-item">', $pu_paginate_links);
-            $pu_paginate_links = str_replace('<li><span aria-current="page" class="page-numbers current">', '<li><a class="nav-item active" href="">', $pu_paginate_links);
-            $pu_paginate_links = str_replace('</span></li>', '</a></li>', $pu_paginate_links);
-            $pu_paginate_links = str_replace('<a class="page-numbers"', '<a class="nav-item"', $pu_paginate_links);
-            // $pu_paginate_links = str_replace('page-numbers dots', 'nav-item', $pu_paginate_links);
-            $pu_paginate_links = str_replace('<a class="next page-numbers"', '<a class="nav-item"', $pu_paginate_links);
-            $pu_paginate_links = str_replace('<a class="prev page-numbers"', '<a class="nav-item"', $pu_paginate_links);
-            $pu_paginate_links = str_replace('<span class="page-link dots">', '<a class="nav-item" href="">', $pu_paginate_links);
-            // $pu_paginate_links = str_replace('</span>', '</a>', $pu_paginate_links);
-            $pu_paginate_links = str_replace('<ul class=\'page-numbers\'>', '<ul class="wd-navigation mt-20">', $pu_paginate_links);
-            // $pu_paginate_links = str_replace('<li class="page-item"><a class="page-link dots" href="">', '<li class="page-item disabled"><a class="page-link dots" href="">', $pu_paginate_links);
 
-            $pagination = '<div class="my-4"><nav aria-label="Page navigation">' . $pu_paginate_links . '</nav></div>';
+            $pu_paginate_links = str_replace('<ul class=\'page-numbers\'>', '<ul class="pagination justify-content-center my-5">', $pu_paginate_links);
+            $pu_paginate_links = str_replace('<li>', '<li class="page-item">', $pu_paginate_links);
+            $pu_paginate_links = str_replace('page-numbers', 'page-link border-0 rounded-circle text-dark round-32 mx-1 d-flex align-items-center justify-content-center', $pu_paginate_links);
+
+            $pu_paginate_links = str_replace('<li class="page-item"><span aria-current="page" class="page-link border-0 rounded-circle text-dark round-32 mx-1 d-flex align-items-center justify-content-center current">', '<li class="page-item active"><a class="page-link border-0 rounded-circle round-32 mx-1 d-flex align-items-center justify-content-center" href="javascript:void(0)">', $pu_paginate_links);
+
+            $pu_paginate_links = str_replace('</span>', '</a>', $pu_paginate_links);
+            $pu_paginate_links = str_replace('&hellip;', '...', $pu_paginate_links);
+
+            $pu_paginate_links = str_replace('<span class="page-link border-0 rounded-circle text-dark round-32 mx-1 d-flex align-items-center justify-content-center dots">', '<a class="page-link border-0 rounded-circle text-dark round-32 mx-1 d-flex align-items-center justify-content-center" href="javascript:void(0)">', $pu_paginate_links);
+
+            $pagination = '<nav aria-label="' . __('Navegação da Página', 'pu') . '">' . $pu_paginate_links . '</nav>';
 
             // Prevents duplicate bars in the middle of the url.
             if ($url_base) {
@@ -490,4 +489,193 @@ function pu_update_profile_user_image($file, $user_id, $slug, $changed_thumbnail
             }
         }
     }
+}
+
+
+/**
+ * pu_slugify
+ *
+ * @param  string $text
+ * @param  string $divider
+ * @return string
+ */
+function pu_slugify($text, string $divider = '-')
+{
+    // Mapeamento de caracteres acentuados comuns em português
+    $acentos = array(
+        'à',
+        'á',
+        'â',
+        'ã',
+        'ä',
+        'å',
+        'ç',
+        'è',
+        'é',
+        'ê',
+        'ë',
+        'ì',
+        'í',
+        'î',
+        'ï',
+        'ñ',
+        'ò',
+        'ó',
+        'ô',
+        'õ',
+        'ö',
+        'ù',
+        'ü',
+        'ú',
+        'ÿ',
+        'À',
+        'Á',
+        'Â',
+        'Ã',
+        'Ä',
+        'Å',
+        'Ç',
+        'È',
+        'É',
+        'Ê',
+        'Ë',
+        'Ì',
+        'Í',
+        'Î',
+        'Ï',
+        'Ñ',
+        'Ò',
+        'Ó',
+        'Ô',
+        'Õ',
+        'Ö',
+        'Ù',
+        'Ü',
+        'Ú',
+        'Ÿ',
+        'ä',
+        'ö',
+        'ü',
+        'ß',
+        'Ä',
+        'Ö',
+        'Ü'
+    );
+    $semAcentos = array(
+        'a',
+        'a',
+        'a',
+        'a',
+        'a',
+        'a',
+        'c',
+        'e',
+        'e',
+        'e',
+        'e',
+        'i',
+        'i',
+        'i',
+        'i',
+        'n',
+        'o',
+        'o',
+        'o',
+        'o',
+        'o',
+        'u',
+        'u',
+        'u',
+        'y',
+        'A',
+        'A',
+        'A',
+        'A',
+        'A',
+        'A',
+        'C',
+        'E',
+        'E',
+        'E',
+        'E',
+        'I',
+        'I',
+        'I',
+        'I',
+        'N',
+        'O',
+        'O',
+        'O',
+        'O',
+        'O',
+        'U',
+        'U',
+        'U',
+        'Y',
+        'ae',
+        'oe',
+        'ue',
+        'ss',
+        'Ae',
+        'Oe',
+        'Ue'
+    );
+
+    $text = strtolower($text); // Converte para minúsculas
+    $text = str_replace($acentos, $semAcentos, $text); // Remove acentos
+
+    // Substitui caracteres não alfanuméricos e espaços por hífen
+    $text = preg_replace('~[^\\pL\\pN]+~u', $divider, $text);
+
+    $text = trim($text, $divider); // Remove hífens extras no início/fim
+    $text = preg_replace('~-+~', $divider, $text); // Remove hífens duplicados
+
+
+    if (empty($text)) {
+        return 'n-a';
+    }
+
+    return $text;
+}
+
+/**
+ * pu_previsao_lucro_liquido
+ *
+ * @param  int $post_id
+ * @return string
+ */
+function pu_previsao_lucro_liquido($post_id)
+{
+    return __('Ainda não definido', 'pu');
+}
+
+/**
+ * pu_tipo_valor_options
+ *
+ * @return array
+ */
+function pu_tipo_valor_options()
+{
+    $options = array(
+        'pct'       => __('%', 'pu'),
+        'fixed'     => __('€', 'pu')
+    );
+    return $options;
+}
+
+/**
+ * pu_projecao_lucratividade_field
+ *
+ * @param  int $post_id
+ * @param  string $slug
+ * @return object
+ */
+function pu_projecao_lucratividade_field($post_id, $slug)
+{
+    $field = new stdClass();
+    $field->valor = get_post_meta($post_id, $slug . '_valor', true);
+    $field->valor = $field->valor ? $field->valor : 0;
+    $field->tipo = get_post_meta($post_id, $slug . '_tipo', true);
+    $field->tipo = $field->tipo ? $field->tipo : 'fixed';
+    return $field;
 }

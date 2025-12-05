@@ -1,0 +1,25 @@
+.form-control {
+    text-align: center;
+}
+textarea.form-control {
+    text-align: left;
+    resize: none;
+}
+.green-input {
+    .form-control,
+    .form-control:disabled,
+    .input-group-text {
+        background-color: var(--bs-success);
+        border-color: var(--bs-success);
+        color: var(--bs-white);
+    }
+}
+.pink-input {
+    .form-control,
+    .form-control:disabled,
+    .input-group-text {
+        background-color: var(--light-pink);
+        border-color: var(--light-pink);
+        color: var(--bs-white);
+    }
+}

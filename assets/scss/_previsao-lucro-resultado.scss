@@ -1,0 +1,38 @@
+.previsao-lucro-resultado-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 15px 20px;
+    background-color: var(--bs-success);
+    color: var(--bs-white);
+    border-radius: 5px;
+    margin-top: 20px;
+    .previsao-lucro-resultado-aside {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 10px;
+        .previsao-lucro-resultado-aside-title,
+        .previsao-lucro-resultado-aside-text {
+            margin-bottom: 0;
+            color: inherit;
+        }
+        .previsao-lucro-resultado-aside-title {
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.2em;
+        }
+        .previsao-lucro-resultado-aside-text {
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1.2em;
+        }
+        .previsao-lucro-resultado-resultado {
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.2em;
+        }
+    }
+}

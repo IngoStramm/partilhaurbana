@@ -1,0 +1,15 @@
+.admin-bar {
+    // padding-top: 46px;
+    .topbar {
+        top: 46px;
+    }
+}
+
+@media (min-width: 768px) {
+    .admin-bar {
+        // padding-top: 32px;
+        .topbar {
+            top: 32px;
+        }
+    }
+}

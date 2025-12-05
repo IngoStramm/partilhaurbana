@@ -1,0 +1,74 @@
+.projeto-item {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 20px;
+    background-color: var(--bs-white);
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 0 2px 0 rgba(145, 158, 171, 0.2),
+        0 12px 24px -4px rgba(145, 158, 171, 0.12);
+    .projeto-item-content {
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 20px;
+        .projeto-item-img {
+            width: 210px;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 11px;
+        }
+        .projeto-item-info {
+            .projeto-item-title {
+                color: var(--bs-primary);
+                font-size: 1rem;
+                font-weight: 600;
+                line-height: 1.2em;
+                margin-bottom: 15px;
+            }
+            .projeto-item-info-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                justify-content: flex-start;
+                gap: 10px;
+                font-size: 0.875rem;
+                color: var(--medium-plus-blue);
+                line-height: 1.2em;
+                font-weight: 400;
+                li {
+                    strong {
+                        font-weight: 700;
+                    }
+                }
+            }
+        }
+        .projeto-item-btn {
+            margin-left: auto;
+        }
+    }
+    .projeto-item-footer {
+        padding: 15px 20px;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        background-color: var(--bs-success);
+        color: var(--bs-white);
+        font-size: 1rem;
+        font-weight: 600;
+        line-height: 1.2em;
+    }
+    .projeto-item-footer-title,
+    .projeto-item-footer-preco {
+        margin: 0;
+        color: inherit;
+        font-size: inherit;
+    }
+}

@@ -6,7 +6,7 @@ function mi_imovel_post_type()
 {
     $portfolio = new PU_Post_Type(
         'Projeto', // Nome (Singular) do Post Type.
-        'projeto' // Slug do Post Type.;
+        'projetos' // Slug do Post Type.;
     );
 
     $portfolio->set_labels(
