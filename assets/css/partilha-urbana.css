@@ -4,6 +4,7 @@
   --almost-white: #e3e7ed;
   --orange: #f8a049;
   --light-pink: #ffa9a9;
+  --input-bd-color: #dfe5ef;
 }
 
 .admin-bar .topbar {
@@ -27,6 +28,25 @@
   gap: 20px;
 }
 .single-admin-bar .single-admin-bar-title {
+  color: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.2em;
+}
+
+.single-settings-bar {
+  background-color: var(--bs-success);
+  color: var(--bs-white);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-radius: 5px;
+  margin-bottom: 24px;
+  gap: 20px;
+}
+.single-settings-bar .single-settings-bar-title {
   color: inherit;
   font-size: 1rem;
   font-weight: 600;
@@ -212,10 +232,6 @@
   margin: 0 0 30px;
 }
 
-.form-control {
-  text-align: center;
-}
-
 textarea.form-control {
   text-align: left;
   resize: none;
@@ -235,6 +251,13 @@ textarea.form-control {
   background-color: var(--light-pink);
   border-color: var(--light-pink);
   color: var(--bs-white);
+}
+
+.form-control.focus-input {
+  border-width: 0;
+}
+.form-control.focus-input.show-bd {
+  border-width: 1px;
 }
 
 .table > thead {
@@ -292,5 +315,83 @@ textarea.form-control {
 
 .site-footer {
   margin-top: 80px;
+}
+
+.form-group-image .featured-image-preview {
+  display: none;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10px;
+}
+.form-group-image .featured-image-preview img {
+  width: 130px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+.form-group-image .featured-image-preview .featured-image-preview-btns {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+}
+.form-group-image .featured-image-preview .featured-image-preview-btns .btn {
+  font-size: 0.7rem;
+  padding: 7px 12px;
+}
+.form-group-image .featured-image-inputs {
+  display: block;
+}
+.form-group-image.has-image .featured-image-preview {
+  display: flex;
+}
+.form-group-image.has-image .featured-image-inputs {
+  display: none;
+}
+
+.bg-primary {
+  background-color: var(--bs-primary) !important;
+  color: var(--bs-white) !important;
+}
+
+.bg-secondary {
+  background-color: var(--bs-secondary) !important;
+  color: var(--bs-white) !important;
+}
+
+.alert {
+  padding: 20px 30px;
+}
+.alert > * {
+  margin-bottom: 0;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (min-width: 992px) {
+  .form-actions {
+    justify-content: flex-end;
+  }
+}
+.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.drag-over {
+  position: relative;
+  border: solid 2px var(--almost-white) !important;
+}
+
+.icon-draggable {
+  stroke: var(--medium-blue);
+  margin-right: 10px;
+  cursor: grab;
 }
 /*# sourceMappingURL=partilha-urbana.css.map */

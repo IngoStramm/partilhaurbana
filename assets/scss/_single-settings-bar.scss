@@ -1,0 +1,18 @@
+.single-settings-bar {
+    background-color: var(--bs-success);
+    color: var(--bs-white);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-bottom: 24px;
+    gap: 20px;
+    .single-settings-bar-title {
+        color: inherit;
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0;
+        line-height: 1.2em;
+    }
+}

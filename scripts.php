@@ -44,14 +44,17 @@ function pu_frontend_scripts()
     #endregion
 
     wp_register_script('imask-script', PU_URL . '/assets/js/imask.min.js', array('jquery', 'vendor-script', 'bootstrap-script', 'simplebar-script', 'app-init-script', 'theme-script', 'app-script', 'sidebarmenu-script', 'iconify-icon-script', 'highlight-script', 'owl-script', 'apexcharts-script'), $version, array('strategy' => 'defer', 'in_footer' => true));
-    
+
     wp_register_script('partilha-urbana-script', PU_URL . '/assets/js/partilha-urbana' . $min . '.js', array('jquery', 'imask-script', 'vendor-script', 'vendor-script', 'bootstrap-script', 'simplebar-script', 'app-init-script', 'theme-script', 'app-script', 'sidebarmenu-script', 'iconify-icon-script', 'highlight-script', 'owl-script', 'apexcharts-script'), $version, true);
 
     wp_enqueue_script('partilha-urbana-script');
 
+    $estagios = is_singular('projetos') ? get_post_meta(get_the_ID(), 'estagios_settings', true) : null;
+
     wp_localize_script('partilha-urbana-script', 'ajax_object', array(
-        'ajax_url'                  => admin_url('admin-ajax.php'),
-        'plugin_url'                => PU_URL,
+        'ajax_url'              => admin_url('admin-ajax.php'),
+        'plugin_url'            => PU_URL,
+        'estagios'              => $estagios
     ));
 
 

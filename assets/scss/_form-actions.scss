@@ -1,0 +1,12 @@
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+@media (min-width: 992px) {
+    .form-actions {
+    justify-content: flex-end;
+}
+}

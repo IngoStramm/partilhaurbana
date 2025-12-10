@@ -1,6 +1,7 @@
 @use 'colors';
 @use 'wp-admin-bar';
 @use 'single-admin-bar';
+@use 'single-settings-bar';
 @use 'sidebar';
 @use 'user-profile';
 @use 'btn';
@@ -13,3 +14,8 @@
 @use 'table';
 @use 'previsao-lucro-resultado';
 @use 'site-footer';
+@use 'settings_form';
+@use 'bgc';
+@use 'alert';
+@use 'form-actions';
+@use 'drag-effects';

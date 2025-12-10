@@ -1,0 +1,36 @@
+.form-group-image {
+    .featured-image-preview {
+        display: none;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 10px;
+        img {
+            width: 130px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .featured-image-preview-btns {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            .btn {
+                font-size: 0.7rem;
+                padding: 7px 12px;
+            }
+        }
+    }
+    .featured-image-inputs {
+        display: block;
+    }
+    &.has-image {
+        .featured-image-preview {
+            display: flex;
+        }
+        .featured-image-inputs {
+            display: none;
+        }
+    }
+}

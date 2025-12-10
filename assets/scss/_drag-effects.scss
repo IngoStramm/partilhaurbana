@@ -1,0 +1,14 @@
+.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+.drag-over {
+    position: relative;
+    // box-shadow: 0 0 15px var(--medium-blue);
+    border: solid 2px var(--almost-white) !important;
+}
+.icon-draggable {
+    stroke: var(--medium-blue);
+    margin-right: 10px;
+    cursor: grab;
+}

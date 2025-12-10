@@ -38,7 +38,7 @@ global $total_effort, $total_cost;
                                                 type="text"
                                                 id="<?php echo 'effort-' . $k; ?>"
                                                 name="effort[]"
-                                                class="form-control pct-input"
+                                                class="form-control pct-input text-center"
                                                 value="<?php echo $estagio_effort; ?>"
                                                 aria-label="<?php printf(__('Esforço (%s)', 'pu'), $estagio_title); ?>">
                                         </div>
@@ -49,7 +49,7 @@ global $total_effort, $total_cost;
                                                 type="text"
                                                 id="<?php echo 'cost-' . $k; ?>"
                                                 name="cost[]"
-                                                class="form-control money-no-decimals-input"
+                                                class="form-control money-no-decimals-input text-center"
                                                 value="<?php echo $estagio_cost; ?>"
                                                 aria-label="<?php printf(__('Custo (%s)', 'pu'), $estagio_title); ?>">
                                         </div>
@@ -76,7 +76,7 @@ global $total_effort, $total_cost;
                                 <input
                                     type="text" id="total-effort"
                                     name="total-effort"
-                                    class="form-control pct-input"
+                                    class="form-control pct-input text-center"
                                     value="<?php echo $total_effort; ?>"
                                     aria-label="<?php printf(__('Esforço Total (%s)', 'pu'), $estagio_title); ?>"
                                     readonly>
@@ -88,7 +88,7 @@ global $total_effort, $total_cost;
                                     type="text"
                                     id="total-cost"
                                     name="total-cost"
-                                    class="form-control money-no-decimals-input"
+                                    class="form-control money-no-decimals-input text-center"
                                     value="<?php echo $total_cost; ?>"
                                     aria-label="<?php printf(__('Custo Total (%s)', 'pu'), $estagio_title); ?>"
                                     readonly>
