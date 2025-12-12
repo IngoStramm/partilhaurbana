@@ -1,8 +1,10 @@
 (() => {
     'use strict';
-    // Destaca o item do menu atual
 
     const estagios = ajax_object.estagios;
+    const projetoImages = ajax_object.projeto_images;
+
+    // Destaca o item do menu atual
     function highlightInit() {
         hljs.initHighlightingOnLoad();
 
@@ -97,16 +99,7 @@
         });
     }
 
-    function formGroupImage() {
-        const formGroupImages = document.querySelectorAll('.form-group-image');
-        formGroupImages.forEach(group => {
-            const btn = group.querySelector('button');
-            btn.addEventListener('click', () => {
-                group.classList.remove('has-image');
-            });
-        });
-    }
-
+    // Estágios do Projeto
     function estagiosAddItem() {
         const newEstagio = {
             title: '',
@@ -246,13 +239,79 @@
         });
     }
 
+    // Imagem do projeto
+    function removeImage(e) {
+        e.preventDefault();
+        const btn = e.target;
+        const container = btn.closest('.file-image-preview');
+        const fileInput = container.querySelector('#featured-image');
+        fileInput.value = null;
+        projetoImages.splice(btn.dataset.index, 1);
+        renderImagesPreview();
+    }
+
+    function addProjetoImage() {
+        const fileInput = document.querySelector('#featured-image');
+        if (typeof fileInput === undefined || !fileInput) {
+            return;
+        }
+        fileInput.addEventListener('input', e => {
+            const newFiles = e.target.files;
+            for (const newFile of newFiles) {
+                console.log('newFile', newFile);
+                projetoImages.push(URL.createObjectURL(newFile));
+            }
+            renderImagesPreview();
+        });
+    }
+
+    function toggleImagesPreviewInput() {
+        const container = document.querySelector('#file-image-preview');
+        if (projetoImages.length > 0) {
+            container.classList.add('has-image');
+        } else {
+            container.classList.remove('has-image');
+        }
+    }
+
+    function renderImagesPreview() {
+        const imagesPreviewList = document.querySelector('#images-preview');
+        if (typeof imagesPreviewList === undefined || !imagesPreviewList) {
+            return;
+        }
+        imagesPreviewList.innerHTML = '';
+        projetoImages.forEach((image, i) => {
+            const li = document.createElement('li');
+            li.classList.add('images-preview-item');
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.classList.add('btn-clear-image');
+            btn.ariaLabel = 'Remover imagem';
+            btn.dataset.index = i;
+            btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>`;
+            btn.addEventListener('click', removeImage);
+            li.appendChild(btn);
+
+            const newImage = document.createElement('img');
+            newImage.classList.add('image-preview');
+            newImage.src = image;
+            li.appendChild(newImage);
+
+            imagesPreviewList.appendChild(li);
+        });
+        toggleImagesPreviewInput();
+    }
+
     window.addEventListener('load', () => {
         highlightInit();
         inputMasks();
         goBackBtn();
-        formGroupImage();
         estagiosRepeater();
         renderEstagios();
         estagioReorderItem();
+        renderImagesPreview();
+        addProjetoImage();
     });
 })();

@@ -2,7 +2,7 @@
     <div class="projetos-header">
         <div class="d-flex align-items-center justify-content-between gap-4 mb-4">
             <h2 class="section-title mb-0"><?php the_title(); ?></h2>
-            <a href="#" class="btn btn-secondary btn-with-icon go-back-btn">
+            <a href="<?php echo site_url('projetos'); ?>" class="btn btn-secondary btn-with-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="24" viewBox="0 0 12 24" fill="none">
                     <path fill-rule="evenodd" clip-rule="evenodd" d="M4.03592 12L10 17.8335L8.80735 19L2.24695 12.5833C2.08883 12.4286 2 12.2188 2 12C2 11.7812 2.08883 11.5714 2.24695 11.4167L8.80735 5L10 6.16653L4.03592 12Z" fill="white" />
                 </svg>

@@ -12,6 +12,7 @@ get_header(); ?>
 
 <?php
 get_template_part('template-parts/general/help', 'section', array('title' => __('Projetos', 'pu'), 'text' => __('Os projetos ajudam a planejar a obra.', 'pu'), 'url' => '#'));
+get_template_part('template-parts/general/new-projeto', 'section');
 if (have_posts()) { ?>
     <div class="row gap-4">
         <?php

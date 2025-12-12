@@ -223,7 +223,7 @@ function pu_text_login_btn()
 /**
  * pu_get_page_id
  *
- * @param  string $slug ('login', 'newuser', 'lostpassword', 'resetpassword')
+ * @param  string $slug ('login', 'newuser', 'lostpassword', 'resetpassword', 'newprojeto')
  * @return string
  */
 function pu_get_page_id($slug)
@@ -258,6 +258,13 @@ function pu_get_page_id($slug)
             }
             break;
 
+        case 'newprojeto':
+            $resetpassword_page_id = pu_get_option('pu_new_projeto', false, 'pu_site_pages_options');
+            if ($resetpassword_page_id) {
+                $return_id = $resetpassword_page_id;
+            }
+            break;
+
         default:
             $return_id = null;
             break;
@@ -268,7 +275,7 @@ function pu_get_page_id($slug)
 /**
  * pu_get_page_url
  *
- * @param  string $slug ('login', 'newuser', 'lostpassword', 'resetpassword')
+ * @param  string $slug ('login', 'newuser', 'lostpassword', 'resetpassword', 'newprojeto')
  * @return string
  */
 function pu_get_page_url($slug)
@@ -300,6 +307,12 @@ function pu_get_page_url($slug)
             $resetpassword_page_id = pu_get_page_id('resetpassword');
             if ($resetpassword_page_id) {
                 $return_url = get_page_link($resetpassword_page_id);
+            }
+            break;
+        case 'newprojeto':
+            $newprojeto_page_id = pu_get_page_id('newprojeto');
+            if ($newprojeto_page_id) {
+                $return_url = get_page_link($newprojeto_page_id);
             }
             break;
 

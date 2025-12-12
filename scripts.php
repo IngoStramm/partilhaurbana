@@ -49,12 +49,21 @@ function pu_frontend_scripts()
 
     wp_enqueue_script('partilha-urbana-script');
 
-    $estagios = is_singular('projetos') ? get_post_meta(get_the_ID(), 'estagios_settings', true) : null;
+    $estagios = is_singular('projetos') ? get_post_meta(get_the_ID(), 'estagios_settings', true) : array();
+
+    $projeto_images = array();
+    if (is_singular('projetos')) {
+        $post_thumbnail_url = get_the_post_thumbnail_url(get_the_ID(), 'full');
+        if ($post_thumbnail_url) {
+            $projeto_images[] = $post_thumbnail_url;
+        }
+    }
 
     wp_localize_script('partilha-urbana-script', 'ajax_object', array(
         'ajax_url'              => admin_url('admin-ajax.php'),
         'plugin_url'            => PU_URL,
-        'estagios'              => $estagios
+        'estagios'              => $estagios,
+        'projeto_images'         => $projeto_images
     ));
 
 

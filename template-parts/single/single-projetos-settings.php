@@ -1,16 +1,21 @@
 <?php
+$new_projeto = !is_singular('projetos');
 $post_id = get_the_ID();
-$preco = get_post_meta($post_id, 'preco', true);
-$preco = $preco ? $preco : 0;
-$dono_imovel = get_the_terms($post_id, 'dono-do-projeto');
+$preco = $new_projeto ? null : get_post_meta($post_id, 'preco', true);
+$preco = !$new_projeto && $preco ? $preco : 0;
+$dono_imovel = $new_projeto ? null : get_the_terms($post_id, 'dono-do-projeto');
 $dono_imovel_nome = $dono_imovel ? $dono_imovel[0]->name : null;
 $dono_imovel_id = $dono_imovel ? $dono_imovel[0]->term_id : null;
-$post_thumbnail_url = get_the_post_thumbnail_url($post_id, 'full');
+$post_thumbnail_url = $new_projeto ? '' : get_the_post_thumbnail_url($post_id, 'full');
 ?>
 <div class="col-md-12">
     <div class="projetos-header">
         <div class="d-flex flex-column align-items-start justify-content-start gap-2 mb-4">
-            <h2 class="section-title mb-0"><?php _e('O que deseja fazer?', 'pu'); ?></h2>
+            <?php if ($new_projeto) { ?>
+                <h2 class="section-title mb-0"><?php _e('Novo projeto!', 'pu'); ?></h2>
+            <?php } else { ?>
+                <h2 class="section-title mb-0"><?php _e('O que deseja fazer?', 'pu'); ?></h2>
+            <?php } ?>
             <p><?php _e('Projetos podem ser transformados em obra após sua validação.', 'pu'); ?></p>
         </div>
     </div>
@@ -23,7 +28,7 @@ $post_thumbnail_url = get_the_post_thumbnail_url($post_id, 'full');
                     <div class="col-md-6 mb-4">
                         <div class="form-group">
                             <label class="mb-2 form-label" for="title"><?php _e('Como deseja chamar este projeto', 'pu'); ?></label>
-                            <input type="text" class="form-control" id="title" name="title" value="<?php the_title(); ?>">
+                            <input type="text" class="form-control" id="title" name="title" value="<?php echo $new_projeto ? '' : get_the_title(); ?>">
                         </div>
                     </div>
                     <div class="col-md-6 mb-4">
@@ -36,23 +41,18 @@ $post_thumbnail_url = get_the_post_thumbnail_url($post_id, 'full');
                         <div class="form-group">
                             <label class="mb-2 form-label" for="owner"><?php _e('Quem é o dono deste imóvel?', 'pu'); ?></label>
                             <input type="text" class="form-control" id="owner" name="owner" value="<?php echo $dono_imovel_nome; ?>">
-                            <input type="hidden" id="dono-do-imovel-id" name="dono-do-imovel-id" value="<?php echo $dono_imovel_id; ?>">
+                            <input type="hidden" id="dono-do-imovel-id" name="dono-do-imovel-id" value="<?php echo $dono_imovel_id ? $dono_imovel_id : ''; ?>">
                         </div>
                     </div>
                     <div class="col-md-6 mb-4">
-                        <div class="form-group form-group-image <?php echo $post_thumbnail_url ? 'has-image' : ''; ?>">
+                        <div class="form-group file-image-preview" id="file-image-preview">
                             <div class="mb-2 form-label"><?php _e('Imagem do projeto', 'pu'); ?></div>
-                            <div class="featured-image-preview">
-                                <?php if ($post_thumbnail_url) { ?>
-                                    <img src="<?php echo $post_thumbnail_url; ?>">
-                                <?php } ?>
-                                <div class="featured-image-preview-btns">
-                                    <button type="button" class="btn btn-danger"><?php _e('Remover imagem', 'pu'); ?></button>
-                                </div>
-                            </div>
-                            <div class="featured-image-inputs">
+                            <ul id="images-preview" class="images-preview">
+                            </ul>
+                            <div class="image-inputs">
                                 <input class="form-control" type="file" id="featured-image" name="featured-image" aria-label="<?php _e('Imagem do projeto', 'pu'); ?>" />
                             </div>
+                            <input type="hidden" class="changed-thumbnail">
                         </div>
                     </div>
                 </div>

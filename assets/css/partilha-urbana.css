@@ -67,6 +67,7 @@
   padding-right: 8px;
 }
 
+.btn-with-icon .icon,
 .btn-with-icon svg {
   height: 1.5em;
   margin-right: 0.5em;
@@ -317,36 +318,59 @@ textarea.form-control {
   margin-top: 80px;
 }
 
-.form-group-image .featured-image-preview {
+.file-image-preview .images-preview {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.file-image-preview .images-preview .images-preview-item {
+  position: relative;
+}
+.file-image-preview .images-preview .images-preview-item .btn-clear-image {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 1;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background-color: var(--bs-danger);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+}
+.file-image-preview .images-preview .images-preview-item .btn-clear-image svg {
+  stroke: var(--bs-white);
+}
+.file-image-preview .images-preview .images-preview-item .image-preview {
   display: none;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
   gap: 10px;
-}
-.form-group-image .featured-image-preview img {
   width: 130px;
   height: 80px;
   object-fit: cover;
   border-radius: 10px;
 }
-.form-group-image .featured-image-preview .featured-image-preview-btns {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
-}
-.form-group-image .featured-image-preview .featured-image-preview-btns .btn {
-  font-size: 0.7rem;
-  padding: 7px 12px;
-}
-.form-group-image .featured-image-inputs {
+.file-image-preview .image-inputs {
   display: block;
 }
-.form-group-image.has-image .featured-image-preview {
+.file-image-preview.has-image .images-preview .images-preview-item .btn-clear-image {
   display: flex;
 }
-.form-group-image.has-image .featured-image-inputs {
+.file-image-preview.has-image .images-preview .images-preview-item .image-preview {
+  display: flex;
+}
+.file-image-preview.has-image .image-inputs {
   display: none;
 }
 
