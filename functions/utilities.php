@@ -692,3 +692,79 @@ function pu_projecao_lucratividade_field($post_id, $slug)
     $field->tipo = $field->tipo ? $field->tipo : 'fixed';
     return $field;
 }
+
+function pu_get_projeto_data($post_id = null)
+{
+    $post_id = !$post_id ? get_the_ID() : $post_id;
+    $dono_imovel = get_the_terms($post_id, 'dono-do-projeto');
+    $dono_imovel_nome = $dono_imovel ? $dono_imovel[0]->name : null;
+    $dono_imovel_id = $dono_imovel ? $dono_imovel[0]->term_id : null;
+    $projeto = new stdClass();
+    $projeto->title = get_the_title($post_id);
+    $projeto->price = get_post_meta($post_id, 'preco', true);
+    $projeto->owner = $dono_imovel_nome;
+    $projeto->ownerId = $dono_imovel_id;
+    $projeto->estagios = is_singular('projetos') ? get_post_meta($post_id, 'estagios_settings', true) : array();
+
+    $projeto->images = array();
+    $post_thumbnail_url = get_the_post_thumbnail_url($post_id, 'full');
+    if ($post_thumbnail_url) {
+        $projeto->images[] = $post_thumbnail_url;
+    }
+    $projeto->id = $post_id;
+    return $projeto;
+}
+
+/**
+ * pu_form_get_field
+ *
+ * @param  string $name
+ * @param  string $msg
+ * @param  string $field_type (field_type[default], email, url, absint, money, array)
+ * @return string
+ */
+function pu_form_get_field($name, $msg, $field_type = 'text')
+{
+    if (!isset($_POST[$name]) || !$_POST[$name]) {
+        wp_send_json_error(array('msg' => $msg), 200);
+    }
+    switch ($field_type) {
+        case 'textarea':
+            $field = sanitize_textarea_field($_POST[$name]);
+            break;
+
+        case 'email':
+            $field = sanitize_email($_POST[$name]);
+            break;
+
+        case 'url':
+            $field = esc_url_raw($_POST[$name]);
+            break;
+
+        case 'absint':
+            $field = absint($_POST[$name]);
+            break;
+
+        case 'money':
+            $field = sanitize_text_field($_POST[$name]);
+            $field = pu_format_number($field);
+            break;
+
+        case 'array':
+            $field_arr = $_POST[$name];
+            if (count($field_arr) <= 0) {
+                wp_send_json_error(array('msg' => $msg), 200);
+            }
+            $field = [];
+            foreach ($_POST[$name] as $k => $v) {
+                $field[] = sanitize_text_field($v);
+            }
+            break;
+
+        default:
+            $field = sanitize_text_field($_POST[$name]);
+            break;
+    }
+
+    return $field;
+}

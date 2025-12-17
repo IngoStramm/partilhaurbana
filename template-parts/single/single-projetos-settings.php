@@ -1,12 +1,16 @@
 <?php
 $new_projeto = !is_singular('projetos');
 $post_id = get_the_ID();
+$user_id = get_current_user_id();
 $preco = $new_projeto ? null : get_post_meta($post_id, 'preco', true);
 $preco = !$new_projeto && $preco ? $preco : 0;
 $dono_imovel = $new_projeto ? null : get_the_terms($post_id, 'dono-do-projeto');
 $dono_imovel_nome = $dono_imovel ? $dono_imovel[0]->name : null;
 $dono_imovel_id = $dono_imovel ? $dono_imovel[0]->term_id : null;
 $post_thumbnail_url = $new_projeto ? '' : get_the_post_thumbnail_url($post_id, 'full');
+$pu_projeto_settings_form_nonce = wp_create_nonce('pu_projeto_settings_form_nonce');
+$estagios = get_post_meta($post_id, 'estagios_settings', true);
+// pu_debug(pu_get_projeto_data());
 ?>
 <div class="col-md-12">
     <div class="projetos-header">
@@ -23,24 +27,24 @@ $post_thumbnail_url = $new_projeto ? '' : get_the_post_thumbnail_url($post_id, '
 <div class="col-md-12">
     <div class="card">
         <div class="card-body">
-            <form action="" method="post">
+            <form id="form-settings-projeto" class="form-settings-projeto needs-validation" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" class="needs-validation new-imovel-form" enctype="multipart/form-data" novalidate>
                 <div class="row mb-5">
                     <div class="col-md-6 mb-4">
                         <div class="form-group">
                             <label class="mb-2 form-label" for="title"><?php _e('Como deseja chamar este projeto', 'pu'); ?></label>
-                            <input type="text" class="form-control" id="title" name="title" value="<?php echo $new_projeto ? '' : get_the_title(); ?>">
+                            <input type="text" class="form-control" id="title" name="title" value="<?php echo $new_projeto ? '' : get_the_title(); ?>" required>
                         </div>
                     </div>
                     <div class="col-md-6 mb-4">
                         <div class="form-group">
                             <label class="mb-2 form-label " for="price"><?php _e('Preço de compra (ou preço do imóvel)', 'pu'); ?></label>
-                            <input type="text" class="form-control money-no-decimals-input" id="price" name="price" value="<?php echo $preco; ?>">
+                            <input type="text" class="form-control money-no-decimals-input" id="price" name="price" value="<?php echo $preco; ?>" required>
                         </div>
                     </div>
                     <div class="col-md-6 mb-4">
                         <div class="form-group">
                             <label class="mb-2 form-label" for="owner"><?php _e('Quem é o dono deste imóvel?', 'pu'); ?></label>
-                            <input type="text" class="form-control" id="owner" name="owner" value="<?php echo $dono_imovel_nome; ?>">
+                            <input type="text" class="form-control" id="owner" name="owner" value="<?php echo $dono_imovel_nome; ?>" required>
                             <input type="hidden" id="dono-do-imovel-id" name="dono-do-imovel-id" value="<?php echo $dono_imovel_id ? $dono_imovel_id : ''; ?>">
                         </div>
                     </div>
@@ -51,6 +55,7 @@ $post_thumbnail_url = $new_projeto ? '' : get_the_post_thumbnail_url($post_id, '
                             </ul>
                             <div class="image-inputs">
                                 <input class="form-control" type="file" id="featured-image" name="featured-image" aria-label="<?php _e('Imagem do projeto', 'pu'); ?>" />
+                                <input type="hidden" id="delete-featured-image" name="delete-featured-image">
                             </div>
                             <input type="hidden" class="changed-thumbnail">
                         </div>
@@ -96,10 +101,15 @@ $post_thumbnail_url = $new_projeto ? '' : get_the_post_thumbnail_url($post_id, '
                     </ul>
                 </div>
 
+                <div id="form-alert-placeholder"></div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-danger"><?php _e('Cancelar', 'pu'); ?></button>
-                    <button type="submit" class="btn btn-success"><?php _e('Salvar e Publicar', 'pu'); ?></button>
+                    <?php /* ?><button type="submit" class="btn btn-danger"><?php _e('Cancelar', 'pu'); ?></button><?php */ ?>
+                    <button type="submit" class="btn btn-success" disabled><?php _e('Salvar e Publicar', 'pu'); ?></button>
                 </div>
+                <input type="hidden" value="pu_projeto_settings_form" name="action">
+                <input type="hidden" value="<?php echo $pu_projeto_settings_form_nonce; ?>" name="pu_projeto_settings_form_nonce" id="pu_projeto_settings_form_nonce">
+                <input type="hidden" value="<?php echo $post_id; ?>" name="post_id" id="post_id">
+                <input type="hidden" value="<?php echo $user_id; ?>" name="user_id" id="$user_id">
             </form>
         </div>
     </div>

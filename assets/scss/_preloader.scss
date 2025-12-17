@@ -1,0 +1,10 @@
+.preloader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 1s ease-in-out;
+    opacity: 0.95;
+    &.hiding {
+        opacity: 0;
+    }
+}

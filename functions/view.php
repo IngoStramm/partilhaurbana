@@ -113,3 +113,14 @@ function pu_projecao_lucratividade_item($title, $field_text, $field, $slug, $td 
     </tr>";
     return $output;
 }
+
+/**
+ * pu_invalid_back
+ *
+ * @return string
+ */
+function pu_invalid_back()
+{
+    $output = '<div class="invalid-feedback">' . __('Campo obrigatório', 'mi') . '</div>';
+    return $output;
+}

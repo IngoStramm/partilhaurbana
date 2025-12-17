@@ -418,4 +418,15 @@ textarea.form-control {
   margin-right: 10px;
   cursor: grab;
 }
+
+.preloader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 1s ease-in-out;
+  opacity: 0.95;
+}
+.preloader.hiding {
+  opacity: 0;
+}
 /*# sourceMappingURL=partilha-urbana.css.map */

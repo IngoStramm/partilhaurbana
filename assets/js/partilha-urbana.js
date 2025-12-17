@@ -3,6 +3,21 @@
 
     const estagios = ajax_object.estagios;
     const projetoImages = ajax_object.projeto_images;
+    const themeUrl = ajax_object.theme_url;
+
+    console.log('projetoImages', projetoImages);
+
+    function showAlert(alertPlaceholder, message, type) {
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('mt-3');
+        wrapper.innerHTML = [
+            `<div id="form-alert" class="alert alert-${type} alert-dismissible" role="alert">`,
+            `   <div>${message}</div>`,
+            '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+            '</div>'
+        ].join('');
+        alertPlaceholder.append(wrapper);
+    }
 
     // Destaca o item do menu atual
     function highlightInit() {
@@ -183,6 +198,14 @@
         estagiosRepeaters.forEach(estagiosRepeater => {
             const tbody = estagiosRepeater.querySelector('tbody');
             tbody.innerHTML = '';
+            if (estagios.length === 0) {
+                const newEstagio = {
+                    title: '',
+                    cost: 0,
+                    effort: 0
+                };
+                estagios.push(newEstagio);
+            }
             estagios.forEach((estagio, i) => {
                 const tr = document.createElement('tr');
                 tr.dataset.order = i;
@@ -200,11 +223,13 @@
                 const td2 = document.createElement('td');
                 const estagioInput = document.createElement('input');
                 estagioInput.type = 'text';
-                estagioInput.name = `new-estagio-${i}`;
+                // estagioInput.name = `new-estagio-${i}`;
+                estagioInput.name = `estagios[]`;
                 estagioInput.id = `new-estagio-${i}`;
                 estagioInput.value = estagio.title !== undefined && estagio.title ? estagio.title : '';
                 estagioInput.classList.add('form-control');
                 estagioInput.classList.add('focus-input');
+                estagioInput.required = true;
 
                 estagioInput.addEventListener('input', () => {
                     estagios[i].title = estagioInput.value;
@@ -245,6 +270,8 @@
         const btn = e.target;
         const container = btn.closest('.file-image-preview');
         const fileInput = container.querySelector('#featured-image');
+        const deleteInput = container.querySelector('#delete-featured-image');
+        deleteInput.value = true;
         fileInput.value = null;
         projetoImages.splice(btn.dataset.index, 1);
         renderImagesPreview();
@@ -258,7 +285,6 @@
         fileInput.addEventListener('input', e => {
             const newFiles = e.target.files;
             for (const newFile of newFiles) {
-                console.log('newFile', newFile);
                 projetoImages.push(URL.createObjectURL(newFile));
             }
             renderImagesPreview();
@@ -279,6 +305,7 @@
         if (typeof imagesPreviewList === undefined || !imagesPreviewList) {
             return;
         }
+
         imagesPreviewList.innerHTML = '';
         projetoImages.forEach((image, i) => {
             const li = document.createElement('li');
@@ -304,6 +331,138 @@
         toggleImagesPreviewInput();
     }
 
+    function formsValidation() {
+        const forms = document.querySelectorAll('.needs-validation');
+
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+
+                if (event.submitter.name !== 'previous-step' && !form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                if (event.submitter.name !== 'previous-step') {
+                    form.classList.add('was-validated');
+                }
+            }, false);
+        });
+    }
+
+    function projetoSettingsForm() {
+        const projetoSettingsForms = document.querySelectorAll('.form-settings-projeto');
+        projetoSettingsForms.forEach(form => {
+            form.addEventListener('submit', e => {
+                e.preventDefault();
+
+                if (typeof document.getElementById('form-alert') !== undefined && document.getElementById('form-alert')) {
+                    const formAlert = bootstrap.Alert.getOrCreateInstance('#form-alert');
+                    formAlert.close();
+                }
+
+                if (!form.checkValidity()) {
+                    return;
+                }
+                console.log('submit');
+                tooglePreloader();
+                form.classList.add('was-validated');
+                const titleInput = form.querySelector('#title');
+                const priceInput = form.querySelector('#price');
+                const ownerInput = form.querySelector('#owner');
+                const ownerInputId = form.querySelector('#dono-do-imovel-id');
+                const featuredImageInput = form.querySelector('#featured-image');
+                const btn = form.querySelector('button[type="submit"]');
+
+                if (typeof btn === undefined || !btn) {
+                    return;
+                }
+
+                if (btn.disabled) {
+                    return;
+                }
+                btn.disabled = true;
+                const originalBtnHtml = btn.innerHTML;
+                btn.innerHTML = `
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>   <span class="ml-5">Enviando...</span>`;
+
+                const ajaxUrl = ajax_object.ajax_url;
+                const data = new FormData(form);
+                const action = data.get('action');
+                const alertPlaceholder = document.getElementById('form-alert-placeholder');
+                fetch(ajaxUrl, {
+                    method: 'POST',
+                    body: data
+                })
+                    .then((response) => response.json())
+                    .then((response) => {
+                        const status = response.success ? 'success' : 'danger';
+                        showAlert(alertPlaceholder, response.data.msg, status);
+                        console.log('response', response);
+                        if (status === 'success') {
+                            titleInput.value = response.data.projetos_data.title;
+                            priceInput.value = response.data.projetos_data.price;
+                            ownerInput.value = response.data.projetos_data.owner;
+                            ownerInputId.value = response.data.projetos_data.ownerId;
+                            // parei aqui
+                            // falta continuar a atualizar os campos e a imagem 
+                            featuredImageInput.value = '';
+                            projetoImages.length = 0;
+                            projetoImages.push(...response.data.projetos_data.images);
+                            renderImagesPreview();
+                            renderEstagios();
+                            featuredImageInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            priceInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    })
+                    .catch((error) => {
+                        showAlert(alertPlaceholder, error, 'danger');
+                    })
+                    .finally(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = originalBtnHtml;
+                        form.classList.remove('was-validated');
+                        tooglePreloader(false);
+                    });
+
+            });
+        });
+    }
+
+    function loadedSettingsForm() {
+        const projetoSettingsForm = document.querySelector('#form-settings-projeto');
+        if (typeof projetoSettingsForm === undefined || !projetoSettingsForm) {
+            return;
+        }
+        const btn = projetoSettingsForm.querySelector('button[type="submit"]');
+        btn.disabled = false;
+    }
+
+    function tooglePreloader(show = true) {
+        const preloaderId = 'preloader';
+        const existingPreloader = document.querySelector(`#${preloaderId}`);
+        if (typeof existingPreloader !== undefined && existingPreloader) {
+            console.log('existingPreloader', existingPreloader);
+            existingPreloader.classList.add('hiding');
+            setTimeout(() => {
+                existingPreloader.classList.remove('hiding');
+                existingPreloader.remove();
+            }, 1000);
+        }
+        if (!show) {
+            return;
+        }
+        const newPreloader = document.createElement('div');
+        newPreloader.id = preloaderId;
+        newPreloader.classList.add('preloader');
+        newPreloader.innerHTML = `
+        <div 
+            class="spinner-grow text-primary" 
+            style="width: 3rem; height: 3rem" 
+            role="status">
+            <span class="visually-hidden">Processando...</span>
+        </div>`;
+        document.body.appendChild(newPreloader);
+    }
+
     window.addEventListener('load', () => {
         highlightInit();
         inputMasks();
@@ -313,5 +472,8 @@
         estagioReorderItem();
         renderImagesPreview();
         addProjetoImage();
+        formsValidation();
+        projetoSettingsForm();
+        loadedSettingsForm();
     });
 })();
