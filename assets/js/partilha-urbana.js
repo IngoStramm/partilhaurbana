@@ -350,6 +350,12 @@
 
     function projetoSettingsForm() {
         const projetoSettingsForms = document.querySelectorAll('.form-settings-projeto');
+        const alertPlaceholder = document.getElementById('form-alert-placeholder');
+        const newProjetoSuccess_message = sessionStorage.getItem('showSuccessAlert');
+        if (newProjetoSuccess_message) {
+            showAlert(alertPlaceholder, newProjetoSuccess_message, 'success');
+            sessionStorage.removeItem('showSuccessAlert');
+        }
         projetoSettingsForms.forEach(form => {
             form.addEventListener('submit', e => {
                 e.preventDefault();
@@ -368,7 +374,7 @@
                 const titleInput = form.querySelector('#title');
                 const priceInput = form.querySelector('#price');
                 const ownerInput = form.querySelector('#owner');
-                const ownerInputId = form.querySelector('#dono-do-imovel-id');
+                const ownerInputId = form.querySelector('#dono-do-projeto-id');
                 const featuredImageInput = form.querySelector('#featured-image');
                 const btn = form.querySelector('button[type="submit"]');
 
@@ -387,7 +393,6 @@
                 const ajaxUrl = ajax_object.ajax_url;
                 const data = new FormData(form);
                 const action = data.get('action');
-                const alertPlaceholder = document.getElementById('form-alert-placeholder');
                 fetch(ajaxUrl, {
                     method: 'POST',
                     body: data
@@ -402,6 +407,7 @@
                             priceInput.value = response.data.projetos_data.price;
                             ownerInput.value = response.data.projetos_data.owner;
                             ownerInputId.value = response.data.projetos_data.ownerId;
+
                             // parei aqui
                             // falta continuar a atualizar os campos e a imagem 
                             featuredImageInput.value = '';
@@ -411,6 +417,10 @@
                             renderEstagios();
                             featuredImageInput.dispatchEvent(new Event('input', { bubbles: true }));
                             priceInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            if (response.data.redirect_to) {
+                                window.location = response.data.redirect_to;
+                                sessionStorage.setItem('showSuccessAlert', response.data.msg);
+                            }
                         }
                     })
                     .catch((error) => {

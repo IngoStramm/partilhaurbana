@@ -10,6 +10,7 @@ function pu_projeto_settings_form()
     }
 
     $post_id = isset($_POST['post_id']) && $_POST['post_id'] ? $_POST['post_id'] : null;
+    $new_projeto = !$post_id ? true : false;
 
     // Verifica se o usuário existe
     $user_id = pu_form_get_field('user_id', __('ID do usuário ausente', 'pu'), 'absint');
@@ -32,7 +33,7 @@ function pu_projeto_settings_form()
     $post_title = pu_form_get_field('title', __('Título do projeto ausente.', 'pu'));
     $post_price = pu_form_get_field('price', __('Preço do projeto ausente.', 'pu'), 'money');
     $post_owner = pu_form_get_field('owner', __('Dono do projeto ausente.', 'pu'));
-    $dono_do_imovel_id = pu_form_get_field('dono-do-imovel-id', __('Dono do projeto ausente.', 'pu'), 'absint');
+    $dono_do_projeto_id = isset($_POST['dono-do-projeto-id']) && $_POST['dono-do-projeto-id'] ? $_POST['dono-do-projeto-id'] : null;
     $estagios = pu_form_get_field('estagios', __('Estágios do projeto ausente.', 'pu'), 'array');
 
     // Argumentos para salvar/criar o post
@@ -80,9 +81,20 @@ function pu_projeto_settings_form()
         wp_send_json_error(array('msg' => $error_message), 200);
     }
 
-    $update_dono_do_projeto = wp_set_post_terms($update_projeto_id, array($dono_do_imovel_id), 'dono-do-projeto');
-    if (is_wp_error($update_dono_do_projeto) || !$update_dono_do_projeto) {
-        $error_message = is_wp_error($update_dono_do_projeto) ? $update_dono_do_projeto->get_error_message() : __('Ocorreu um erro ao salvar o dono do projeto');
+    // verifica se o termo existe
+    if (!$dono_do_projeto_id) {
+        // senão existe, cria o termo
+        $new_dono_do_projeto_term = wp_insert_term($post_owner,  'dono-do-projeto');
+        if (is_wp_error($new_dono_do_projeto_term) || !$new_dono_do_projeto_term) {
+            $error_message = is_wp_error($new_dono_do_projeto_term) ? $new_dono_do_projeto_term->get_error_message() : __('Ocorreu um erro ao salvar o termo do dono do projeto');
+            wp_send_json_error(array('msg' => $error_message), 200);
+        }
+        $dono_do_projeto_id = $new_dono_do_projeto_term['term_id'];
+    }
+
+    $update_dono_do_projeto_term = wp_set_post_terms($update_projeto_id, array($dono_do_projeto_id), 'dono-do-projeto');
+    if (is_wp_error($update_dono_do_projeto_term) || !$update_dono_do_projeto_term) {
+        $error_message = is_wp_error($update_dono_do_projeto_term) ? $update_dono_do_projeto_term->get_error_message() : __('Ocorreu um erro ao salvar o dono do projeto');
         wp_send_json_error(array('msg' => $error_message), 200);
     }
 
@@ -99,12 +111,12 @@ function pu_projeto_settings_form()
     $delete_featured_image = isset($_POST['delete-featured-image']) && $_POST['delete-featured-image'] ? (bool)$_POST['delete-featured-image'] : null;
 
     // Apaga a imagem atual do projeto
-    if ($delete_featured_image && $post_id) {
+    if ($delete_featured_image && $update_projeto_id) {
         $deleted_projeto_thumbnail_id = true;
 
-        $projeto_thumbnail_id = get_post_meta($post_id, '_thumbnail_id', true);
+        $projeto_thumbnail_id = get_post_meta($update_projeto_id, '_thumbnail_id', true);
         if ($projeto_thumbnail_id) {
-            $deleted_projeto_thumbnail_id = delete_post_meta($post_id, '_thumbnail_id');
+            $deleted_projeto_thumbnail_id = delete_post_meta($update_projeto_id, '_thumbnail_id');
         }
 
         if (!$deleted_projeto_thumbnail_id) {
@@ -112,15 +124,15 @@ function pu_projeto_settings_form()
         }
 
         if ($projeto_thumbnail_id) {
-            $delete_imovel_thumbnail_attachment = wp_delete_attachment($projeto_thumbnail_id);
-            if (!$delete_imovel_thumbnail_attachment) {
+            $delete_projeto_thumbnail_attachment = wp_delete_attachment($projeto_thumbnail_id);
+            if (!$delete_projeto_thumbnail_attachment) {
                 wp_send_json_error(array('msg' =>  __('Ocorreu um erro ao tentar remover o arquivo do servidor, porém mesmo assim o avatar foi removido do perfil do usuário.', 'pu')), 200);
             }
         }
     }
 
     // Adiciona a nova imagem do projeto
-    if (isset($featured_image_file['name']) && $featured_image_file['name'] && $post_id) {
+    if (isset($featured_image_file['name']) && $featured_image_file['name'] && $update_projeto_id) {
 
         // Pega as infromações do arquivo
         $file = $featured_image_file;
@@ -167,18 +179,22 @@ function pu_projeto_settings_form()
         } else {
             wp_send_json_error(array('msg' => sprintf(__('Ocorreu um erro ao tentar fazer o upload do arquivo %s.', 'pu'), $filename)), 200);
         }
-        $updated_thumbnail = set_post_thumbnail($post_id, $attach_id);
+        $updated_thumbnail = set_post_thumbnail($update_projeto_id, $attach_id);
         if (!$updated_thumbnail) {
             wp_send_json_error(array('msg' => __('Ocorreu um erro ao atualizar a imagem principal do projeto', 'pu')), 200);
         }
     }
 
-    $projetos_data = pu_get_projeto_data($post_id);
+    $projetos_data = pu_get_projeto_data($update_projeto_id);
 
     $response = array(
         'msg'                   => __('Mensagem enviada com sucesso!', 'pu'),
         'projetos_data'         => $projetos_data,
     );
+
+    if ($new_projeto) {
+        $response['redirect_to'] = get_post_permalink($update_projeto_id) . '?view=settings';
+    }
 
     wp_send_json_success($response);
 }

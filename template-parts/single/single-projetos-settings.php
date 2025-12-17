@@ -1,15 +1,15 @@
 <?php
 $new_projeto = !is_singular('projetos');
-$post_id = get_the_ID();
+$post_id = $new_projeto ? null : get_the_ID();
 $user_id = get_current_user_id();
 $preco = $new_projeto ? null : get_post_meta($post_id, 'preco', true);
 $preco = !$new_projeto && $preco ? $preco : 0;
-$dono_imovel = $new_projeto ? null : get_the_terms($post_id, 'dono-do-projeto');
-$dono_imovel_nome = $dono_imovel ? $dono_imovel[0]->name : null;
-$dono_imovel_id = $dono_imovel ? $dono_imovel[0]->term_id : null;
+$dono_projeto = $new_projeto ? null : get_the_terms($post_id, 'dono-do-projeto');
+$dono_projeto_nome = $dono_projeto ? $dono_projeto[0]->name : null;
+$dono_projeto_id = $dono_projeto ? $dono_projeto[0]->term_id : null;
 $post_thumbnail_url = $new_projeto ? '' : get_the_post_thumbnail_url($post_id, 'full');
 $pu_projeto_settings_form_nonce = wp_create_nonce('pu_projeto_settings_form_nonce');
-$estagios = get_post_meta($post_id, 'estagios_settings', true);
+$estagios = $new_projeto ? [] : get_post_meta($post_id, 'estagios_settings', true);
 // pu_debug(pu_get_projeto_data());
 ?>
 <div class="col-md-12">
@@ -27,7 +27,7 @@ $estagios = get_post_meta($post_id, 'estagios_settings', true);
 <div class="col-md-12">
     <div class="card">
         <div class="card-body">
-            <form id="form-settings-projeto" class="form-settings-projeto needs-validation" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" class="needs-validation new-imovel-form" enctype="multipart/form-data" novalidate>
+            <form id="form-settings-projeto" class="form-settings-projeto needs-validation" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" class="needs-validation new-projeto-form" enctype="multipart/form-data" novalidate>
                 <div class="row mb-5">
                     <div class="col-md-6 mb-4">
                         <div class="form-group">
@@ -44,8 +44,8 @@ $estagios = get_post_meta($post_id, 'estagios_settings', true);
                     <div class="col-md-6 mb-4">
                         <div class="form-group">
                             <label class="mb-2 form-label" for="owner"><?php _e('Quem é o dono deste imóvel?', 'pu'); ?></label>
-                            <input type="text" class="form-control" id="owner" name="owner" value="<?php echo $dono_imovel_nome; ?>" required>
-                            <input type="hidden" id="dono-do-imovel-id" name="dono-do-imovel-id" value="<?php echo $dono_imovel_id ? $dono_imovel_id : ''; ?>">
+                            <input type="text" class="form-control" id="owner" name="owner" value="<?php echo $dono_projeto_nome; ?>" required>
+                            <input type="hidden" id="dono-do-projeto-id" name="dono-do-projeto-id" value="<?php echo $dono_projeto_id ? $dono_projeto_id : ''; ?>">
                         </div>
                     </div>
                     <div class="col-md-6 mb-4">
@@ -108,7 +108,9 @@ $estagios = get_post_meta($post_id, 'estagios_settings', true);
                 </div>
                 <input type="hidden" value="pu_projeto_settings_form" name="action">
                 <input type="hidden" value="<?php echo $pu_projeto_settings_form_nonce; ?>" name="pu_projeto_settings_form_nonce" id="pu_projeto_settings_form_nonce">
-                <input type="hidden" value="<?php echo $post_id; ?>" name="post_id" id="post_id">
+                <?php if (!$new_projeto) { ?>
+                    <input type="hidden" value="<?php echo $post_id; ?>" name="post_id" id="post_id">
+                <?php } ?>
                 <input type="hidden" value="<?php echo $user_id; ?>" name="user_id" id="$user_id">
             </form>
         </div>
