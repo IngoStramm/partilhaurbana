@@ -93,7 +93,7 @@ function pu_register_projecao_lucratividade_projetos_metabox()
 
     $items = array(
         'preco_venda'                   => __('Por quanto pretende vender este imóvel:', 'pu'),
-        'comissao_impotos'              => __('Comissão da imobiliária e impostos:', 'pu'),
+        'comissao_impostos'             => __('Comissão da imobiliária e impostos:', 'pu'),
         'certificado_documentacao'      => __('Certificados e documentação:', 'pu'),
         'imposto_lucro'                 => __('Imposto sobre o lucro (mais-valia):', 'pu'),
         'escrituras_registros'          => __('Escrituras e registros:', 'pu'),

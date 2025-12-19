@@ -3,9 +3,18 @@
 
     const estagios = ajax_object.estagios;
     const projetoImages = ajax_object.projeto_images;
+    const projetoProjecao = ajax_object.projeto_projecao;
+    const projetoPreco = convertStringToNumber(ajax_object.projeto_preco);
     const themeUrl = ajax_object.theme_url;
-
-    console.log('projetoImages', projetoImages);
+    const projecaoInputs = [
+        'preco-venda',
+        'comissao-impostos',
+        'certificado-documentacao',
+        'imposto-lucro',
+        'escrituras-registros',
+        'outros-a',
+        'outros-b'
+    ];
 
     function showAlert(alertPlaceholder, message, type) {
         const wrapper = document.createElement('div');
@@ -99,6 +108,21 @@
         };
         pctInputs.forEach(pctInput => {
             const pctMask = IMask(pctInput, pctMaskOptions);
+        });
+
+        const pctNoLimitInputs = document.querySelectorAll('.pct-no-limit-input');
+        const pctNoLimitMaskOptions = {
+            mask: 'num %',
+            lazy: false,
+            blocks: {
+                num: {
+                    min: 0,
+                    mask: Number,
+                }
+            }
+        };
+        pctNoLimitInputs.forEach(pctInput => {
+            const pctMask = IMask(pctInput, pctNoLimitMaskOptions);
         });
 
     }
@@ -473,6 +497,122 @@
         document.body.appendChild(newPreloader);
     }
 
+    function calcEstagioEffort() {
+        const effortInputs = document.querySelectorAll('.effort-input');
+        effortInputs.forEach((effortInput, i) => {
+            effortInput.addEventListener('input', e => {
+                let effort = e.target.value;
+                effort = effort.replace(/%/g, '');
+                effort = convertStringToNumber(effort);
+                estagios[i].effort = effort;
+                calcEstagiosSubtotal();
+            });
+        });
+    }
+
+    function calcEstagioCost() {
+        const costInputs = document.querySelectorAll('.cost-input');
+        costInputs.forEach((costInput, i) => {
+            costInput.addEventListener('input', e => {
+                let cost = e.target.value;
+                cost = cost.replace(/%/g, '');
+                cost = convertStringToNumber(cost);
+                estagios[i].cost = cost;
+                calcEstagiosSubtotal();
+            });
+        });
+    }
+
+    function calcEstagiosSubtotal() {
+        const totalEffortInput = document.querySelector('#total-effort');
+        const totalCostInput = document.querySelector('#total-cost');
+        let totalEffort = 0;
+        let totalCost = 0;
+        estagios.forEach((estagio, i) => {
+            totalEffort += parseInt(estagio.effort);
+            totalCost += parseInt(estagio.cost);
+        });
+        totalEffortInput.value = totalEffort;
+        totalEffortInput.dispatchEvent(new Event('input', { bubbles: true }));
+        totalCostInput.value = totalCost;
+        totalCostInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function convertStringToNumber(str) {
+        let value = '';
+        value = str.replace('.', '');
+        value = value.replace(',', '.');
+        value = parseFloat(value);
+        return value;
+    }
+
+    function getTotalEffort() {
+        const totalEffortInput = document.querySelector('#total-effort');
+        const totalEffort = convertStringToNumber(totalEffortInput.value);
+        return totalEffort;
+    }
+    function getTotalCost() {
+        const totalCostInput = document.querySelector('#total-cost');
+        const totalCost = convertStringToNumber(totalCostInput.value);
+        return totalCost;
+    }
+
+    function atualizaProjecaoInput(e) {
+        const propNewValue = e.target.value;
+        const objectKeyname = e.target.id.replace(/-/g, '_');
+        projetoProjecao[objectKeyname] = propNewValue;
+        atualizaProjecaoResultados();
+    }
+
+    function atualizaProjecaoResultados() {
+        let reduction = 0;
+        projecaoInputs.forEach(selector => {
+            const keyname = selector.replace(/-/g, '_');
+            const subtotalInput = document.querySelector(`#${selector}-total`);
+            const formGroup = subtotalInput.closest('.form-group');
+            let subtotalNewValue = 0;
+            if (projetoProjecao[`${keyname}_tipo`] === 'fixed') {
+                if (keyname === 'preco_venda') {
+                    subtotalNewValue = Math.round(projetoProjecao[`${keyname}_valor`]) - projetoPreco;
+                } else {
+                    subtotalNewValue = Number(projetoProjecao[`${keyname}_valor`]);
+                    subtotalNewValue = subtotalNewValue > 0 ? -subtotalNewValue : subtotalNewValue;
+                }
+            } else {
+                subtotalNewValue = Math.round((projetoProjecao[`${keyname}_valor`] / 100) * projetoPreco);
+                subtotalNewValue = keyname === 'preco_venda' ? subtotalNewValue : -subtotalNewValue;
+            }
+            reduction += keyname === 'preco_venda' ? -subtotalNewValue : subtotalNewValue;
+            subtotalInput.value = subtotalNewValue;
+            formGroup.classList.remove('green-input');
+            formGroup.classList.remove('pink-input');
+            if (subtotalNewValue < 0) {
+                formGroup.classList.add('pink-input');
+            } else {
+                formGroup.classList.add('green-input');
+            }
+            subtotalInput.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        reduction = Math.round(reduction);
+        // Parei aqui
+        // Precisa somar tudo para calcular o lucro
+        console.log('reduction', reduction);
+
+    }
+
+    function calcProjecao() {
+        const formProjecao = document.querySelector('#form-projecao-projeto');
+        if (typeof formProjecao === undefined || !formProjecao) {
+            return;
+        }
+        let totalEffort = getTotalEffort();
+        let totalCost = getTotalCost();
+        projecaoInputs.forEach((selector, i) => {
+            document.querySelector(`#${selector}-valor`).addEventListener('input', atualizaProjecaoInput);
+            document.querySelector(`#${selector}-tipo`).addEventListener('input', atualizaProjecaoInput);
+        });
+    }
+
     window.addEventListener('load', () => {
         highlightInit();
         inputMasks();
@@ -485,5 +625,9 @@
         formsValidation();
         projetoSettingsForm();
         loadedSettingsForm();
+        calcEstagioEffort();
+        calcEstagioCost();
+        calcProjecao();
+        atualizaProjecaoResultados();
     });
 })();

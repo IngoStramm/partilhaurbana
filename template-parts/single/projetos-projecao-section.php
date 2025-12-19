@@ -4,7 +4,7 @@ $post_id = get_the_ID();
 $preco = get_post_meta($post_id, 'preco', true);
 
 $preco_venda = pu_projecao_lucratividade_field($post_id, 'preco_venda');
-$comissao_impotos = pu_projecao_lucratividade_field($post_id, 'comissao_impotos');
+$comissao_impostos = pu_projecao_lucratividade_field($post_id, 'comissao_impostos');
 $certificado_documentacao = pu_projecao_lucratividade_field($post_id, 'certificado_documentacao');
 $imposto_lucro = pu_projecao_lucratividade_field($post_id, 'imposto_lucro');
 $escrituras_registros = pu_projecao_lucratividade_field($post_id, 'escrituras_registros');
@@ -30,10 +30,10 @@ $tipo_valor_options = pu_tipo_valor_options();
                 </thead>
                 <tbody>
                     <tr>
-                        <?php echo pu_projecao_lucratividade_item(__('Comissão da imobiliária e impostos:', 'pu'), __('Comissão de impostos', 'pu'), $comissao_impotos, 'comissao-impostos'); ?>
+                        <?php echo pu_projecao_lucratividade_item(__('Comissão da imobiliária e impostos:', 'pu'), __('Comissão de impostos', 'pu'), $comissao_impostos, 'comissao-impostos'); ?>
                     </tr>
                     <tr>
-                        <?php echo pu_projecao_lucratividade_item(__('Certificados e documentação:', 'pu'), __('Certificados e documentação', 'pu'), $certificado_documentacao, 'certificados-documentacao'); ?>
+                        <?php echo pu_projecao_lucratividade_item(__('Certificados e documentação:', 'pu'), __('Certificados e documentação', 'pu'), $certificado_documentacao, 'certificado-documentacao'); ?>
                     </tr>
                     <tr>
                         <?php echo pu_projecao_lucratividade_item(__('Imposto sobre o lucro (mais-valia):', 'pu'), __('Imposto sobre o lucro', 'pu'), $imposto_lucro, 'imposto-lucro'); ?>

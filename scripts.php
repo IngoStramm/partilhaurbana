@@ -56,6 +56,8 @@ function pu_frontend_scripts()
         'plugin_url'            => PU_URL,
         'estagios'              => $projetos_data->estagios,
         'projeto_images'        => $projetos_data->images,
+        'projeto_projecao'      => $projetos_data->projecao,
+        'projeto_preco'         => $projetos_data->price,
         'theme_url'             => PU_URL
     ));
 
