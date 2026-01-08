@@ -628,6 +628,10 @@
     }
 
     function renderProjecaoResultados() {
+        const formProjecaoProjeto = document.querySelector('.form-projecao-projeto');
+        if (typeof formProjecaoProjeto === undefined || !formProjecaoProjeto) {
+            return;
+        }
         let newReduction = 0;
         projecaoInputs.forEach(selector => {
             const keyname = selector.replace(/-/g, '_');
@@ -694,6 +698,9 @@
 
     function renderPrevisaoLucro() {
         const previsaoLucroResultadoInput = document.querySelector('#previsao-lucro-resultado');
+        if (typeof previsaoLucroResultadoInput === undefined || !previsaoLucroResultadoInput) {
+            return;
+        }
         previsaoLucroResultadoInput.value = calcProjecaoLucro();
         previsaoLucroResultadoInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
