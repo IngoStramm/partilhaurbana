@@ -1,6 +1,6 @@
 <?php
 
-add_action('wp_ajax_nopriv_pu_edit_form', 'pu_projeto_settings_form');
+add_action('wp_ajax_nopriv_projeto_settings_form', 'pu_projeto_settings_form');
 add_action('wp_ajax_pu_projeto_settings_form', 'pu_projeto_settings_form');
 
 function pu_projeto_settings_form()

@@ -29,3 +29,15 @@ textarea.form-control {
         }
     }
 }
+
+.invisible-input {
+    background-color: transparent;
+    padding: 0;
+    border: none;
+    font-size: 1em;
+    color: inherit;
+    field-sizing: content;
+    &:focus {
+        outline: none;
+    }
+}

@@ -10,4 +10,5 @@ require_once 'taxonomies/taxonomies.php';
 require_once 'cmb/cmb.php';
 require_once 'projetos-filter.php';
 require_once 'user-permission.php';
-require_once 'projeto-ajax.php';
+require_once 'projeto-settings-ajax.php';
+require_once 'projeto-projecao-ajax.php';

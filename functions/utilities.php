@@ -714,25 +714,39 @@ function pu_get_projeto_data($post_id = null)
     $projeto->id = $post_id;
 
     $preco_venda_valor = get_post_meta($post_id, 'preco_venda_valor', true);
+    $preco_venda_valor = !$preco_venda_valor ? 0 : $preco_venda_valor;
     $preco_venda_tipo = get_post_meta($post_id, 'preco_venda_tipo', true);
+    $preco_venda_tipo = !$preco_venda_tipo ? 'fixed' : $preco_venda_tipo;
 
     $comissao_impostos_valor = get_post_meta($post_id, 'comissao_impostos_valor', true);
+    $comissao_impostos_valor = !$comissao_impostos_valor ? 0 : $comissao_impostos_valor;
     $comissao_impostos_tipo = get_post_meta($post_id, 'comissao_impostos_tipo', true);
+    $comissao_impostos_tipo = !$comissao_impostos_tipo ? 'fixed' : $comissao_impostos_tipo;
 
     $certificado_documentacao_valor = get_post_meta($post_id, 'certificado_documentacao_valor', true);
+    $certificado_documentacao_valor = !$certificado_documentacao_valor ? 0 : $certificado_documentacao_valor;
     $certificado_documentacao_tipo = get_post_meta($post_id, 'certificado_documentacao_tipo', true);
+    $certificado_documentacao_tipo = !$certificado_documentacao_tipo ? 'fixed' : $certificado_documentacao_tipo;
 
     $imposto_lucro_valor = get_post_meta($post_id, 'imposto_lucro_valor', true);
+    $imposto_lucro_valor = !$imposto_lucro_valor ? 0 : $imposto_lucro_valor;
     $imposto_lucro_tipo = get_post_meta($post_id, 'imposto_lucro_tipo', true);
+    $imposto_lucro_tipo = !$imposto_lucro_tipo ? 'fixed' : $imposto_lucro_tipo;
 
     $escrituras_registros_valor = get_post_meta($post_id, 'escrituras_registros_valor', true);
+    $escrituras_registros_valor = !$escrituras_registros_valor ? 0 : $escrituras_registros_valor;
     $escrituras_registros_tipo = get_post_meta($post_id, 'escrituras_registros_tipo', true);
+    $escrituras_registros_tipo = !$escrituras_registros_tipo ? 'fixed' : $escrituras_registros_tipo;
 
     $outros_a_valor = get_post_meta($post_id, 'outros_a_valor', true);
+    $outros_a_valor = !$outros_a_valor ? 0 : $outros_a_valor;
     $outros_a_tipo = get_post_meta($post_id, 'outros_a_tipo', true);
+    $outros_a_tipo = !$outros_a_tipo ? 'fixed' : $outros_a_tipo;
 
     $outros_b_valor = get_post_meta($post_id, 'outros_b_valor', true);
+    $outros_b_valor = !$outros_b_valor ? 0 : $outros_b_valor;
     $outros_b_tipo = get_post_meta($post_id, 'outros_b_tipo', true);
+    $outros_b_tipo = !$outros_b_tipo ? 'fixed' : $outros_b_tipo;
 
     $projeto->projecao = array(
         'preco_venda_valor'                 => $preco_venda_valor,

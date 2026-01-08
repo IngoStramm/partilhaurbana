@@ -82,6 +82,7 @@ function pu_projecao_lucratividade_item($title, $field_text, $field, $slug, $td 
                     name='$slug-valor'
                     class='form-control text-center'
                     value='$field->valor'
+                    placeholder='0'
                     aria-label='" . sprintf(__('Valor de %s', 'pu'), $field_text) . "'>
             </div>
         </$table_line>
@@ -106,6 +107,7 @@ function pu_projecao_lucratividade_item($title, $field_text, $field, $slug, $td 
                     name='$slug-total'
                     class='form-control money-no-decimals-input text-center'
                     value='0'
+                    placeholder='0'
                     aria-label='" . sprintf(__('Valor total de %s', 'pu'), $field_text) . "'
                     readonly>
             </div>

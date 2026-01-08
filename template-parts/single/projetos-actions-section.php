@@ -8,4 +8,5 @@
             <?php _e('Transformar o projeto em obra', 'pu'); ?>
         </button>
     </div>
+    <div id="form-alert-placeholder"></div>
 </div>

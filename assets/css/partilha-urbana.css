@@ -261,6 +261,18 @@ textarea.form-control {
   border-width: 1px;
 }
 
+.invisible-input {
+  background-color: transparent;
+  padding: 0;
+  border: none;
+  font-size: 1em;
+  color: inherit;
+  field-sizing: content;
+}
+.invisible-input:focus {
+  outline: none;
+}
+
 .table > thead {
   vertical-align: middle;
 }
@@ -308,7 +320,7 @@ textarea.form-control {
   font-weight: 600;
   line-height: 1.2em;
 }
-.previsao-lucro-resultado-container .previsao-lucro-resultado-aside .previsao-lucro-resultado-resultado {
+.previsao-lucro-resultado-container .previsao-lucro-resultado-aside .previsao-lucro-resultado {
   font-size: 1rem;
   font-weight: 600;
   line-height: 1.2em;

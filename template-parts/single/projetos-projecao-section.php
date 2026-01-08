@@ -16,7 +16,7 @@ $tipo_valor_options = pu_tipo_valor_options();
 <div class="col-md-12">
     <div class="card card-body">
         <h2 class="section-title"><?php _e('Projeção de lucratividade', 'pu'); ?></h2>
-        <p><?php printf(__('Investimento total previsto no estágios da restauração: %s€', 'pu'), pu_format_money($total_cost)); ?><br><?php printf(__('Preço de compra do imóvel: %s€', 'pu'), pu_format_money($preco)); ?></p>
+        <p><?php printf(__('Investimento total previsto no estágios da restauração: <input type="text" id="total-cost-view" class="money-no-decimals-input invisible-input" value="%s" disabled>', 'pu'), pu_format_money($total_cost)); ?><br><?php printf(__('Preço de compra do imóvel: %s €', 'pu'), pu_format_money($preco)); ?></p>
 
         <div class="table-responsive">
             <table class="table align-middle text-nowrap">
@@ -53,10 +53,20 @@ $tipo_valor_options = pu_tipo_valor_options();
         <div class="previsao-lucro-resultado-container">
             <div class="previsao-lucro-resultado-aside">
                 <h3 class="previsao-lucro-resultado-aside-title"><?php _e('Previsão de lucro líquido:', 'pu'); ?></h3>
-                <p class="previsao-lucro-resultado-aside-text"><?php _e('Retorno sobre o investimento (ROI): 20.000 / 225.000 = ~8,89%', 'pu'); ?></p>
+                <p class="previsao-lucro-resultado-aside-text">
+                    <?php _e('Retorno sobre o investimento (ROI):', 'pu'); ?>
+                    <span class="roi">
+                        <span class="roi-lucro">0</span> / <span class="roi-custo">0</span> = <span class="roi-resultado">0</span>%
+                    </span>
+                </p>
             </div>
             <div class="previsao-lucro-resultado-aside">
-                <span class="previsao-lucro-resultado-resultado">+20.000€</span>
+                <input
+                    type="text"
+                    id="previsao-lucro-resultado"
+                    name="previsao-lucro-resultado" class="previsao-lucro-resultado previsao-lucro-resultado-input invisible-input"
+                    value="0"
+                    readonly />
             </div>
         </div>
     </div>

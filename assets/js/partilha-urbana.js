@@ -15,6 +15,11 @@
         'outros-a',
         'outros-b'
     ];
+    let reduction = 0;
+    let totalEstagiosEffort = 0;
+    let totalEstagiosCost = 0;
+    let totalCost = 0;
+    console.log('projetoProjecao', projetoProjecao);
 
     function showAlert(alertPlaceholder, message, type) {
         const wrapper = document.createElement('div');
@@ -92,6 +97,48 @@
         };
         moneyNoDecimalsInputs.forEach(moneyNoDecimalsInput => {
             const moneyNoDecimalsMask = IMask(moneyNoDecimalsInput, moneyNoDecimalsMaskOptions);
+        });
+        // Parei aqui
+        // Máscara do lucro (adicionar sinal de mais quando o número for positivo)
+        const previsaoLucroResultadoInputs = document.querySelectorAll('.previsao-lucro-resultado-input');
+        const previsaoLucroResultadoMaskOptions = {
+            mask: [
+                {
+                    mask: '+num €',
+                    lazy: false,
+                    blocks: {
+                        num: {
+                            mask: Number,
+                            scale: 0,
+                            thousandsSeparator: '.',
+                            padFractionalZeros: true,
+                            radix: ',',
+                            mapToRadix: ['.'],
+                        }
+                    }
+                },
+                {
+                    mask: 'num €',
+                    lazy: false,
+                    blocks: {
+                        num: {
+                            mask: Number,
+                            scale: 0,
+                            thousandsSeparator: '.',
+                            padFractionalZeros: true,
+                            radix: ',',
+                            mapToRadix: ['.'],
+                        }
+                    }
+                },
+            ],
+            dispatch: (appended, dynamicMasked) => {
+                const maskIndex = dynamicMasked.value > 0 ? 0 : 1;
+                return dynamicMasked.compiledMasks[maskIndex];
+            }
+        };
+        previsaoLucroResultadoInputs.forEach(moneyNoDecimalsInput => {
+            const previsaoLucroResultadoMask = IMask(moneyNoDecimalsInput, previsaoLucroResultadoMaskOptions);
         });
 
         const pctInputs = document.querySelectorAll('.pct-input');
@@ -474,7 +521,6 @@
         const preloaderId = 'preloader';
         const existingPreloader = document.querySelector(`#${preloaderId}`);
         if (typeof existingPreloader !== undefined && existingPreloader) {
-            console.log('existingPreloader', existingPreloader);
             existingPreloader.classList.add('hiding');
             setTimeout(() => {
                 existingPreloader.classList.remove('hiding');
@@ -510,32 +556,47 @@
         });
     }
 
-    function calcEstagioCost() {
+    function renderEstagioCost() {
         const costInputs = document.querySelectorAll('.cost-input');
         costInputs.forEach((costInput, i) => {
             costInput.addEventListener('input', e => {
                 let cost = e.target.value;
                 cost = cost.replace(/%/g, '');
                 cost = convertStringToNumber(cost);
+                cost = isNaN(cost) ? 0 : cost;
                 estagios[i].cost = cost;
                 calcEstagiosSubtotal();
+                renderPrevisaoLucro();
+                calcTotalCost();
+                renderROI();
+            });
+            costInput.addEventListener('blur', e => {
+                if (!e.target.value || e.target.value === ' €') {
+                    e.target.value = 0;
+                    e.target.dispatchEvent(new Event('input', { bubbles: true }));
+                }
             });
         });
     }
 
+    // função calulcando e renderizando resultado ao mesmo tempo
+    // separar em duas funções
     function calcEstagiosSubtotal() {
         const totalEffortInput = document.querySelector('#total-effort');
         const totalCostInput = document.querySelector('#total-cost');
-        let totalEffort = 0;
-        let totalCost = 0;
+        const totalCostView = document.querySelector('#total-cost-view');
+        let newTotalCost = 0;
         estagios.forEach((estagio, i) => {
-            totalEffort += parseInt(estagio.effort);
-            totalCost += parseInt(estagio.cost);
+            totalEstagiosEffort += parseInt(estagio.effort);
+            newTotalCost += parseInt(estagio.cost);
         });
-        totalEffortInput.value = totalEffort;
+        totalEffortInput.value = totalEstagiosEffort;
         totalEffortInput.dispatchEvent(new Event('input', { bubbles: true }));
-        totalCostInput.value = totalCost;
+        totalCostInput.value = newTotalCost;
         totalCostInput.dispatchEvent(new Event('input', { bubbles: true }));
+        totalCostView.value = newTotalCost;
+        totalCostView.dispatchEvent(new Event('input', { bubbles: true }));
+        totalEstagiosCost = newTotalCost;
     }
 
     function convertStringToNumber(str) {
@@ -546,26 +607,28 @@
         return value;
     }
 
-    function getTotalEffort() {
-        const totalEffortInput = document.querySelector('#total-effort');
-        const totalEffort = convertStringToNumber(totalEffortInput.value);
-        return totalEffort;
-    }
-    function getTotalCost() {
-        const totalCostInput = document.querySelector('#total-cost');
-        const totalCost = convertStringToNumber(totalCostInput.value);
-        return totalCost;
+    function formatNumberToMoney(num) {
+        if (isNaN(num) || num === 0) {
+            return num;
+        }
+        const formattedMoney = new Intl.NumberFormat('de-DE', {
+            style: 'currency',
+            currency: 'EUR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        });
+        return formattedMoney.format(num);
     }
 
     function atualizaProjecaoInput(e) {
         const propNewValue = e.target.value;
         const objectKeyname = e.target.id.replace(/-/g, '_');
         projetoProjecao[objectKeyname] = propNewValue;
-        atualizaProjecaoResultados();
+        renderProjecaoResultados();
     }
 
-    function atualizaProjecaoResultados() {
-        let reduction = 0;
+    function renderProjecaoResultados() {
+        let newReduction = 0;
         projecaoInputs.forEach(selector => {
             const keyname = selector.replace(/-/g, '_');
             const subtotalInput = document.querySelector(`#${selector}-total`);
@@ -582,7 +645,8 @@
                 subtotalNewValue = Math.round((projetoProjecao[`${keyname}_valor`] / 100) * projetoPreco);
                 subtotalNewValue = keyname === 'preco_venda' ? subtotalNewValue : -subtotalNewValue;
             }
-            reduction += keyname === 'preco_venda' ? -subtotalNewValue : subtotalNewValue;
+            // reduction += keyname === 'preco_venda' ? -subtotalNewValue : subtotalNewValue;
+            newReduction += subtotalNewValue;
             subtotalInput.value = subtotalNewValue;
             formGroup.classList.remove('green-input');
             formGroup.classList.remove('pink-input');
@@ -593,11 +657,11 @@
             }
             subtotalInput.dispatchEvent(new Event('input', { bubbles: true }));
         });
-        reduction = Math.round(reduction);
-        // Parei aqui
-        // Precisa somar tudo para calcular o lucro
-        console.log('reduction', reduction);
-
+        newReduction = Math.round(newReduction);
+        reduction = newReduction;
+        renderPrevisaoLucro();
+        calcTotalCost();
+        renderROI();
     }
 
     function calcProjecao() {
@@ -605,11 +669,151 @@
         if (typeof formProjecao === undefined || !formProjecao) {
             return;
         }
-        let totalEffort = getTotalEffort();
-        let totalCost = getTotalCost();
         projecaoInputs.forEach((selector, i) => {
             document.querySelector(`#${selector}-valor`).addEventListener('input', atualizaProjecaoInput);
             document.querySelector(`#${selector}-tipo`).addEventListener('input', atualizaProjecaoInput);
+        });
+    }
+
+    function calcProjecaoLucro() {
+        let lucro = 0;
+        // console.log('projetoProjecao.preco_venda_valor', projetoProjecao.preco_venda_valor);
+        // console.log('projetoPreco', projetoPreco);
+        // lucro = projetoProjecao.preco_venda_valor - projetoPreco;
+        // console.log('lucro', lucro);
+        // console.log('reduction', reduction);
+        lucro += reduction;
+        // console.log('lucro', lucro);
+        // console.log('totalEstagiosCost', totalEstagiosCost);
+        lucro -= totalEstagiosCost;
+        // console.log('lucro', lucro);
+        // console.log('===============');
+
+        return lucro;
+    }
+
+    function renderPrevisaoLucro() {
+        const previsaoLucroResultadoInput = document.querySelector('#previsao-lucro-resultado');
+        previsaoLucroResultadoInput.value = calcProjecaoLucro();
+        previsaoLucroResultadoInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function projetoProjecaoForm() {
+        const projetoProjecaoForms = document.querySelectorAll('.form-projecao-projeto');
+        const alertPlaceholder = document.getElementById('form-alert-placeholder');
+        const newProjetoSuccess_message = sessionStorage.getItem('showSuccessAlert');
+        if (newProjetoSuccess_message) {
+            showAlert(alertPlaceholder, newProjetoSuccess_message, 'success');
+            sessionStorage.removeItem('showSuccessAlert');
+        }
+        projetoProjecaoForms.forEach(form => {
+            form.addEventListener('submit', e => {
+                e.preventDefault();
+
+                if (typeof document.getElementById('form-alert') !== undefined && document.getElementById('form-alert')) {
+                    const formAlert = bootstrap.Alert.getOrCreateInstance('#form-alert');
+                    formAlert.close();
+                }
+
+                if (!form.checkValidity()) {
+                    return;
+                }
+                console.log('submit');
+                tooglePreloader();
+                form.classList.add('was-validated');
+                const precoVendaValorInput = form.querySelector('#preco-venda-valor');
+                const precoVendaTipoInput = form.querySelector('#preco-venda-tipo');
+                const btn = form.querySelector('button[type="submit"]');
+
+                if (typeof btn === undefined || !btn) {
+                    return;
+                }
+
+                if (btn.disabled) {
+                    return;
+                }
+                btn.disabled = true;
+                const originalBtnHtml = btn.innerHTML;
+                btn.innerHTML = `
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>   <span class="ml-5">Enviando...</span>`;
+
+                const ajaxUrl = ajax_object.ajax_url;
+                const data = new FormData(form);
+                const action = data.get('action');
+                fetch(ajaxUrl, {
+                    method: 'POST',
+                    body: data
+                })
+                    .then((response) => response.json())
+                    .then((response) => {
+                        const status = response.success ? 'success' : 'danger';
+                        showAlert(alertPlaceholder, response.data.msg, status);
+                        console.log('response', response);
+                        if (status === 'success') {
+                            precoVendaValorInput.value = response.data.projetos_data.preco_venda_valor;
+                            precoVendaValorInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            precoVendaTipoInput.value = response.data.projetos_data.preco_venda_tipo;
+                            precoVendaTipoInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+                            renderProjecaoResultados();
+                            // if (response.data.redirect_to) {
+                            //     window.location = response.data.redirect_to;
+                            //     sessionStorage.setItem('showSuccessAlert', response.data.msg);
+                            // }
+                        }
+                    })
+                    .catch((error) => {
+                        showAlert(alertPlaceholder, error, 'danger');
+                    })
+                    .finally(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = originalBtnHtml;
+                        form.classList.remove('was-validated');
+                        tooglePreloader(false);
+                    });
+
+            });
+        });
+    }
+
+    function calcTotalCost() {
+        totalCost = 0;
+        totalCost += Math.abs(projetoPreco);
+        totalCost += Math.abs(totalEstagiosCost);
+        projecaoInputs.forEach(selector => {
+            const keyname = selector.replace(/-/g, '_');
+            if (keyname !== 'preco_venda') {
+                if (projetoProjecao[`${keyname}_tipo`] === 'fixed') {
+                    totalCost += Number(projetoProjecao[`${keyname}_valor`]);
+                } else {
+                    totalCost += Math.round((projetoProjecao[`${keyname}_valor`] / 100) * projetoPreco);
+                }
+            }
+        });
+    }
+
+    function calculaROI() {
+        const lucro = calcProjecaoLucro();
+        let resultado = 0;
+        if (lucro !== 0 && totalCost !== 0) {
+            resultado = lucro / totalCost;
+        }
+        resultado = resultado * 100;
+        resultado = Math.round(resultado);
+        return resultado;
+    }
+
+    function renderROI() {
+        const lucro = calcProjecaoLucro();
+        const roisDivs = document.querySelectorAll('.roi');
+        roisDivs.forEach(roiDiv => {
+            const resultadoROI = calculaROI();
+            const roiLucroSpan = roiDiv.querySelector('.roi-lucro');
+            const roiCustoSpan = roiDiv.querySelector('.roi-custo');
+            const roiResultadoSpan = roiDiv.querySelector('.roi-resultado');
+            roiLucroSpan.textContent = formatNumberToMoney(lucro);
+            roiCustoSpan.textContent = formatNumberToMoney(totalCost);
+            roiResultadoSpan.textContent = resultadoROI;
         });
     }
 
@@ -626,8 +830,10 @@
         projetoSettingsForm();
         loadedSettingsForm();
         calcEstagioEffort();
-        calcEstagioCost();
+        renderEstagioCost();
         calcProjecao();
-        atualizaProjecaoResultados();
+        renderProjecaoResultados();
+        renderPrevisaoLucro();
+        projetoProjecaoForm();
     });
 })();
