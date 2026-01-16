@@ -35,10 +35,6 @@ function pu_projeto_settings_form()
     $post_owner = pu_form_get_field('owner', __('Dono do projeto ausente.', 'pu'));
     $post = $_POST;
 
-    // Mudar como o woner é salvo
-    // Salvar apenas em um campo normal e não usar mais uma taxonomia para isso
-    // O próprio ID do projeto será usado para vincular os usuários
-
     $estagios = pu_form_get_field('estagios', __('Estágios do projeto ausente.', 'pu'), 'array');
     // Argumentos para salvar/criar o post
     $args = [];
@@ -84,9 +80,6 @@ function pu_projeto_settings_form()
         }
     }
     $args['meta_input'] = $meta_input;
-
-    // pu_debug($args);
-    // exit;
 
     $update_projeto_id = wp_insert_post($args, true);
     if (is_wp_error($update_projeto_id)) {

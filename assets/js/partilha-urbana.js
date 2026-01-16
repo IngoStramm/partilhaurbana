@@ -841,8 +841,10 @@
         if (typeof projetoProjecaoForm === undefined || !projetoProjecaoForm) {
             return;
         }
-        const btn = projetoProjecaoForm.querySelector('button[type="submit"]');
-        btn.disabled = false;
+        const saveBtn = projetoProjecaoForm.querySelector('#btn-salvar-projeto');
+        const removeBtn = projetoProjecaoForm.querySelector('#btn-remove-projeto');
+        saveBtn.disabled = false;
+        removeBtn.disabled = false;
     }
 
     function calcTotalCost() {
@@ -886,6 +888,81 @@
         });
     }
 
+    function removeProjeto() {
+        const removeBtn = document.querySelector('#btn-remove-projeto');
+        if (typeof removeBtn === undefined || !removeBtn) {
+            return;
+        }
+        removeBtn.addEventListener('click', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            tooglePreloader();
+            const alertPlaceholder = document.getElementById('form-alert-placeholder');
+            if (typeof document.getElementById('form-alert') !== undefined && document.getElementById('form-alert')) {
+                const formAlert = bootstrap.Alert.getOrCreateInstance('#form-alert');
+                formAlert.close();
+            }
+            if (sessionStorage.getItem('removeProjetoMsg')) {
+                sessionStorage.removeItem('removeProjetoMsg');
+            }
+            removeBtn.disabled = true;
+            const originalBtnHtml = removeBtn.innerHTML;
+            removeBtn.innerHTML = `
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>   <span class="ml-5">Removendo...</span>`;
+            const postId = e.target.dataset.postId;
+            const userId = e.target.dataset.userId;
+            const action = e.target.dataset.action;
+            const nonce = e.target.dataset.nonce;
+            console.log('Remove projeto id: ', postId);
+            console.log('userId: ', userId);
+            console.log('Action: ', action);
+            console.log('nonce: ', nonce);
+
+            const ajaxUrl = ajax_object.ajax_url;
+            const data = new FormData();
+            data.append('post-id', postId);
+            data.append('user-id', userId);
+            data.append('action', action);
+            data.append('nonce', nonce);
+            fetch(ajaxUrl, {
+                method: 'POST',
+                body: data
+            })
+                .then((response) => response.json())
+                .then((response) => {
+                    const status = response.success ? 'success' : 'danger';
+                    showAlert(alertPlaceholder, response.data.msg, status);
+                    console.log('response', response);
+                    if (status === 'success') {
+                        if (response.data.redirect_to) {
+                            sessionStorage.setItem('removeProjetoMsg', response.data.msg);
+                            window.location = response.data.redirect_to;
+                        }
+                    }
+                })
+                .catch((error) => {
+                    showAlert(alertPlaceholder, error, 'danger');
+                })
+                .finally(() => {
+                    removeBtn.disabled = false;
+                    removeBtn.innerHTML = originalBtnHtml;
+                    tooglePreloader(false);
+                });
+
+        });
+    }
+
+    function alertRemovedProjeto() {
+        if (!sessionStorage.getItem('removeProjetoMsg')) {
+            return;
+        }
+        const msg = sessionStorage.getItem('removeProjetoMsg');
+        sessionStorage.removeItem('removeProjetoMsg');
+        const bodyWrapper = document.querySelector('.body-wrapper');
+        const firstCol = bodyWrapper.querySelector('.col-md-12');
+        showAlert(firstCol, msg, 'success');
+    }
+
     window.addEventListener('load', () => {
         highlightInit();
         inputMasks();
@@ -905,5 +982,7 @@
         renderPrevisaoLucro();
         projetoProjecaoForm();
         loadedProjecaoForm();
+        removeProjeto();
+        alertRemovedProjeto();
     });
 })();

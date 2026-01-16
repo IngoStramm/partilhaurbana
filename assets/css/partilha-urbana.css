@@ -73,6 +73,10 @@
   margin-right: 0.5em;
 }
 
+.btn-remove-projeto {
+  margin-left: auto;
+}
+
 .help-header {
   background-color: var(--bs-primary);
   color: var(--bs-white);

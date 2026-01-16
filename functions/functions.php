@@ -12,3 +12,4 @@ require_once 'projetos-filter.php';
 require_once 'user-permission.php';
 require_once 'projeto-settings-ajax.php';
 require_once 'projeto-projecao-ajax.php';
+require_once 'remove-projeto-ajax.php';
