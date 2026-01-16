@@ -18,6 +18,7 @@ global $total_effort, $total_cost;
                     <!-- start row -->
                     <?php
                     $estagios = get_post_meta($post_id, 'estagios_settings', true);
+                    // pu_debug($estagios);
                     if ($estagios) {
 
                         foreach ($estagios as $k => $estagio) {
@@ -76,7 +77,7 @@ global $total_effort, $total_cost;
                         <td>
                             <div class="form-group green-input">
                                 <input
-                                    type="text" id="total-effort"
+                                    type="text" id="total-estagios-effort"
                                     name="total-effort"
                                     class="form-control pct-no-limit-input text-center"
                                     value="<?php echo $total_effort; ?>"
@@ -88,7 +89,7 @@ global $total_effort, $total_cost;
                             <div class="form-group green-input">
                                 <input
                                     type="text"
-                                    id="total-cost"
+                                    id="total-estagios-cost"
                                     name="total-cost"
                                     class="form-control money-no-decimals-input text-center"
                                     value="<?php echo $total_cost; ?>"

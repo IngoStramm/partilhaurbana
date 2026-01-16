@@ -4,6 +4,7 @@
     const estagios = ajax_object.estagios;
     const projetoImages = ajax_object.projeto_images;
     const projetoProjecao = ajax_object.projeto_projecao;
+    let projetoObservacoes = ajax_object.projeto_observacoes;
     const projetoPreco = convertStringToNumber(ajax_object.projeto_preco);
     const themeUrl = ajax_object.theme_url;
     const projecaoInputs = [
@@ -18,8 +19,10 @@
     let reduction = 0;
     let totalEstagiosEffort = 0;
     let totalEstagiosCost = 0;
-    let totalCost = 0;
+    let totalGeralCost = 0;
+    console.log('estagios', estagios);
     console.log('projetoProjecao', projetoProjecao);
+    console.log('projetoObservacoes', projetoObservacoes);
 
     function showAlert(alertPlaceholder, message, type) {
         const wrapper = document.createElement('div');
@@ -98,8 +101,7 @@
         moneyNoDecimalsInputs.forEach(moneyNoDecimalsInput => {
             const moneyNoDecimalsMask = IMask(moneyNoDecimalsInput, moneyNoDecimalsMaskOptions);
         });
-        // Parei aqui
-        // Máscara do lucro (adicionar sinal de mais quando o número for positivo)
+
         const previsaoLucroResultadoInputs = document.querySelectorAll('.previsao-lucro-resultado-input');
         const previsaoLucroResultadoMaskOptions = {
             mask: [
@@ -445,9 +447,11 @@
                 const titleInput = form.querySelector('#title');
                 const priceInput = form.querySelector('#price');
                 const ownerInput = form.querySelector('#owner');
-                const ownerInputId = form.querySelector('#dono-do-projeto-id');
                 const featuredImageInput = form.querySelector('#featured-image');
                 const btn = form.querySelector('button[type="submit"]');
+
+                console.log('ownerInput', ownerInput.value);
+
 
                 if (typeof btn === undefined || !btn) {
                     return;
@@ -463,6 +467,7 @@
 
                 const ajaxUrl = ajax_object.ajax_url;
                 const data = new FormData(form);
+
                 const action = data.get('action');
                 fetch(ajaxUrl, {
                     method: 'POST',
@@ -472,15 +477,15 @@
                     .then((response) => {
                         const status = response.success ? 'success' : 'danger';
                         showAlert(alertPlaceholder, response.data.msg, status);
-                        console.log('response', response);
+                        console.log('dono-do-projeto-id', response.data.post['dono-do-projeto-id']);
+                        console.log('owner', response.data.post.owner);
+                        console.log('post_owner', response.data.post_owner);
+                        console.log('dono_do_projeto_id', response.data.dono_do_projeto_id);
+                        console.log('post', response.data.post);
                         if (status === 'success') {
                             titleInput.value = response.data.projetos_data.title;
                             priceInput.value = response.data.projetos_data.price;
                             ownerInput.value = response.data.projetos_data.owner;
-                            ownerInputId.value = response.data.projetos_data.ownerId;
-
-                            // parei aqui
-                            // falta continuar a atualizar os campos e a imagem 
                             featuredImageInput.value = '';
                             projetoImages.length = 0;
                             projetoImages.push(...response.data.projetos_data.images);
@@ -543,7 +548,7 @@
         document.body.appendChild(newPreloader);
     }
 
-    function calcEstagioEffort() {
+    function inputEstagioEffortEvts() {
         const effortInputs = document.querySelectorAll('.effort-input');
         effortInputs.forEach((effortInput, i) => {
             effortInput.addEventListener('input', e => {
@@ -551,12 +556,19 @@
                 effort = effort.replace(/%/g, '');
                 effort = convertStringToNumber(effort);
                 estagios[i].effort = effort;
-                calcEstagiosSubtotal();
+                calcEstagioTotais();
+                renderEstagiosTotais();
+            });
+            effortInput.addEventListener('blur', e => {
+                if (!e.target.value || e.target.value === ' %') {
+                    e.target.value = 0;
+                    e.target.dispatchEvent(new Event('input', { bubbles: true }));
+                }
             });
         });
     }
 
-    function renderEstagioCost() {
+    function inputEstagioCostEvts() {
         const costInputs = document.querySelectorAll('.cost-input');
         costInputs.forEach((costInput, i) => {
             costInput.addEventListener('input', e => {
@@ -565,10 +577,11 @@
                 cost = convertStringToNumber(cost);
                 cost = isNaN(cost) ? 0 : cost;
                 estagios[i].cost = cost;
-                calcEstagiosSubtotal();
-                renderPrevisaoLucro();
+                calcEstagioTotais();
                 calcTotalCost();
+                renderPrevisaoLucro();
                 renderROI();
+                renderEstagiosTotais();
             });
             costInput.addEventListener('blur', e => {
                 if (!e.target.value || e.target.value === ' €') {
@@ -579,24 +592,37 @@
         });
     }
 
-    // função calulcando e renderizando resultado ao mesmo tempo
-    // separar em duas funções
-    function calcEstagiosSubtotal() {
-        const totalEffortInput = document.querySelector('#total-effort');
-        const totalCostInput = document.querySelector('#total-cost');
-        const totalCostView = document.querySelector('#total-cost-view');
-        let newTotalCost = 0;
+    function calcEstagioTotais() {
+        totalEstagiosCost = 0;
+        totalEstagiosEffort = 0;
         estagios.forEach((estagio, i) => {
             totalEstagiosEffort += parseInt(estagio.effort);
-            newTotalCost += parseInt(estagio.cost);
+            totalEstagiosCost += parseInt(estagio.cost);
         });
+    }
+
+    function renderEstagiosTotais() {
+        const totalEffortInput = document.querySelector('#total-estagios-effort');
+        const totalCostInput = document.querySelector('#total-estagios-cost');
+        const totalCostView = document.querySelector('#total-estagios-cost-view');
         totalEffortInput.value = totalEstagiosEffort;
         totalEffortInput.dispatchEvent(new Event('input', { bubbles: true }));
-        totalCostInput.value = newTotalCost;
+        totalCostInput.value = totalEstagiosCost;
         totalCostInput.dispatchEvent(new Event('input', { bubbles: true }));
-        totalCostView.value = newTotalCost;
+        totalCostView.value = totalEstagiosCost;
         totalCostView.dispatchEvent(new Event('input', { bubbles: true }));
-        totalEstagiosCost = newTotalCost;
+    }
+
+    function renderEstagiosInputs() {
+        estagios.forEach((estagio, i) => {
+            const inputEffort = document.querySelector(`#effort-${i}`);
+            inputEffort.value = estagio.effort;
+            inputEffort.dispatchEvent(new Event('input', { bubbles: true }));
+
+            const inputCost = document.querySelector(`#cost-${i}`);
+            inputCost.value = estagio.cost;
+            inputCost.dispatchEvent(new Event('input', { bubbles: true }));
+        });
     }
 
     function convertStringToNumber(str) {
@@ -639,6 +665,7 @@
             const formGroup = subtotalInput.closest('.form-group');
             let subtotalNewValue = 0;
             if (projetoProjecao[`${keyname}_tipo`] === 'fixed') {
+                // Valor fixo
                 if (keyname === 'preco_venda') {
                     subtotalNewValue = Math.round(projetoProjecao[`${keyname}_valor`]) - projetoPreco;
                 } else {
@@ -646,8 +673,14 @@
                     subtotalNewValue = subtotalNewValue > 0 ? -subtotalNewValue : subtotalNewValue;
                 }
             } else {
+                // Valor porcentagem
                 subtotalNewValue = Math.round((projetoProjecao[`${keyname}_valor`] / 100) * projetoPreco);
-                subtotalNewValue = keyname === 'preco_venda' ? subtotalNewValue : -subtotalNewValue;
+                if (keyname === 'preco_venda') {
+                    // pegar o valor da porcentagem e subtrair o valor de compra
+                    subtotalNewValue = Math.round(subtotalNewValue - projetoPreco);
+                } else {
+                    subtotalNewValue = -subtotalNewValue;
+                }
             }
             // reduction += keyname === 'preco_venda' ? -subtotalNewValue : subtotalNewValue;
             newReduction += subtotalNewValue;
@@ -703,6 +736,11 @@
         }
         previsaoLucroResultadoInput.value = calcProjecaoLucro();
         previsaoLucroResultadoInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function renderObservacoes() {
+        const observacoes_textarea = document.querySelector('#projeto-observacoes');
+        observacoes_textarea.value = projetoObservacoes;
     }
 
     function projetoProjecaoForm() {
@@ -762,11 +800,26 @@
                             precoVendaTipoInput.value = response.data.projetos_data.preco_venda_tipo;
                             precoVendaTipoInput.dispatchEvent(new Event('input', { bubbles: true }));
 
+                            // Atualiza projetoProjecao com os valores recebidos
+                            for (let key in projetoProjecao) {
+                                if (Object.hasOwnProperty.call(projetoProjecao, key)) {
+                                    projetoProjecao[key] = response.data.projetos_data[key];
+                                }
+                            }
+                            // Atualiza estagios com os valores recebidos
+                            for (let key in estagios) {
+                                if (Object.hasOwnProperty.call(estagios, key)) {
+                                    estagios[key] = response.data.estagios[key];
+                                }
+                            }
+                            // Atualiza projetoObservacoes com o valor recebido
+                            projetoObservacoes = response.data.projeto_observacoes;
+
+                            calcEstagioTotais();
+                            renderEstagiosTotais();
+                            renderEstagiosInputs();
                             renderProjecaoResultados();
-                            // if (response.data.redirect_to) {
-                            //     window.location = response.data.redirect_to;
-                            //     sessionStorage.setItem('showSuccessAlert', response.data.msg);
-                            // }
+                            renderObservacoes();
                         }
                     })
                     .catch((error) => {
@@ -783,17 +836,26 @@
         });
     }
 
+    function loadedProjecaoForm() {
+        const projetoProjecaoForm = document.querySelector('#form-projecao-projeto');
+        if (typeof projetoProjecaoForm === undefined || !projetoProjecaoForm) {
+            return;
+        }
+        const btn = projetoProjecaoForm.querySelector('button[type="submit"]');
+        btn.disabled = false;
+    }
+
     function calcTotalCost() {
-        totalCost = 0;
-        totalCost += Math.abs(projetoPreco);
-        totalCost += Math.abs(totalEstagiosCost);
+        totalGeralCost = 0;
+        totalGeralCost += Math.abs(projetoPreco);
+        totalGeralCost += Math.abs(totalEstagiosCost);
         projecaoInputs.forEach(selector => {
             const keyname = selector.replace(/-/g, '_');
             if (keyname !== 'preco_venda') {
                 if (projetoProjecao[`${keyname}_tipo`] === 'fixed') {
-                    totalCost += Number(projetoProjecao[`${keyname}_valor`]);
+                    totalGeralCost += Number(projetoProjecao[`${keyname}_valor`]);
                 } else {
-                    totalCost += Math.round((projetoProjecao[`${keyname}_valor`] / 100) * projetoPreco);
+                    totalGeralCost += Math.round((projetoProjecao[`${keyname}_valor`] / 100) * projetoPreco);
                 }
             }
         });
@@ -802,8 +864,8 @@
     function calculaROI() {
         const lucro = calcProjecaoLucro();
         let resultado = 0;
-        if (lucro !== 0 && totalCost !== 0) {
-            resultado = lucro / totalCost;
+        if (lucro !== 0 && totalGeralCost !== 0) {
+            resultado = lucro / totalGeralCost;
         }
         resultado = resultado * 100;
         resultado = Math.round(resultado);
@@ -819,7 +881,7 @@
             const roiCustoSpan = roiDiv.querySelector('.roi-custo');
             const roiResultadoSpan = roiDiv.querySelector('.roi-resultado');
             roiLucroSpan.textContent = formatNumberToMoney(lucro);
-            roiCustoSpan.textContent = formatNumberToMoney(totalCost);
+            roiCustoSpan.textContent = formatNumberToMoney(totalGeralCost);
             roiResultadoSpan.textContent = resultadoROI;
         });
     }
@@ -836,11 +898,12 @@
         formsValidation();
         projetoSettingsForm();
         loadedSettingsForm();
-        calcEstagioEffort();
-        renderEstagioCost();
+        inputEstagioEffortEvts();
+        inputEstagioCostEvts();
         calcProjecao();
         renderProjecaoResultados();
         renderPrevisaoLucro();
         projetoProjecaoForm();
+        loadedProjecaoForm();
     });
 })();

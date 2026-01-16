@@ -31,9 +31,7 @@ function pu_register_seetings_projetos_metabox()
     $cmb->add_field(array(
         'name'                      => esc_html__('Quem é o dono deste imóvel?', 'pu'),
         'id'                        => 'dono_do_projeto',
-        'type'                      => 'taxonomy_radio',
-        'taxonomy'                  => 'dono-do-projeto',
-        'show_option_none'          => false,
+        'type'                      => 'text',
     ));
 
     $group_field_id_settings = $cmb->add_field(array(

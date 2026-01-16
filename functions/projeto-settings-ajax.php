@@ -33,9 +33,13 @@ function pu_projeto_settings_form()
     $post_title = pu_form_get_field('title', __('Título do projeto ausente.', 'pu'));
     $post_price = pu_form_get_field('price', __('Preço do projeto ausente.', 'pu'), 'money');
     $post_owner = pu_form_get_field('owner', __('Dono do projeto ausente.', 'pu'));
-    $dono_do_projeto_id = isset($_POST['dono-do-projeto-id']) && $_POST['dono-do-projeto-id'] ? $_POST['dono-do-projeto-id'] : null;
-    $estagios = pu_form_get_field('estagios', __('Estágios do projeto ausente.', 'pu'), 'array');
+    $post = $_POST;
 
+    // Mudar como o woner é salvo
+    // Salvar apenas em um campo normal e não usar mais uma taxonomia para isso
+    // O próprio ID do projeto será usado para vincular os usuários
+
+    $estagios = pu_form_get_field('estagios', __('Estágios do projeto ausente.', 'pu'), 'array');
     // Argumentos para salvar/criar o post
     $args = [];
     $args['post_type'] = 'projetos';
@@ -60,12 +64,21 @@ function pu_projeto_settings_form()
     $meta_input['preco'] = $post_price;
     $meta_input['dono_do_projeto'] = $post_owner;
     $meta_input['estagios_settings'] = [];
+    $old_estagios = get_post_meta($post_id, 'estagios_settings', true);
     if (is_array($estagios)) {
         foreach ($estagios as $estagio_name) {
+            $effort = 0;
+            $cost = 0;
+            foreach ($old_estagios as $old_estagio) {
+                if ($old_estagio['title'] === $estagio_name) {
+                    $effort = $old_estagio['effort'];
+                    $cost = $old_estagio['cost'];
+                }
+            }
             $estagio = array(
                 'title'         => $estagio_name,
-                'effort'        => 0,
-                'cost'          => 0,
+                'effort'        => $effort,
+                'cost'          => $cost,
             );
             $meta_input['estagios_settings'][] = $estagio;
         }
@@ -78,23 +91,6 @@ function pu_projeto_settings_form()
     $update_projeto_id = wp_insert_post($args, true);
     if (is_wp_error($update_projeto_id)) {
         $error_message = $update_projeto_id->get_error_message();
-        wp_send_json_error(array('msg' => $error_message), 200);
-    }
-
-    // verifica se o termo existe
-    if (!$dono_do_projeto_id) {
-        // senão existe, cria o termo
-        $new_dono_do_projeto_term = wp_insert_term($post_owner,  'dono-do-projeto');
-        if (is_wp_error($new_dono_do_projeto_term) || !$new_dono_do_projeto_term) {
-            $error_message = is_wp_error($new_dono_do_projeto_term) ? $new_dono_do_projeto_term->get_error_message() : __('Ocorreu um erro ao salvar o termo do dono do projeto');
-            wp_send_json_error(array('msg' => $error_message), 200);
-        }
-        $dono_do_projeto_id = $new_dono_do_projeto_term['term_id'];
-    }
-
-    $update_dono_do_projeto_term = wp_set_post_terms($update_projeto_id, array($dono_do_projeto_id), 'dono-do-projeto');
-    if (is_wp_error($update_dono_do_projeto_term) || !$update_dono_do_projeto_term) {
-        $error_message = is_wp_error($update_dono_do_projeto_term) ? $update_dono_do_projeto_term->get_error_message() : __('Ocorreu um erro ao salvar o dono do projeto');
         wp_send_json_error(array('msg' => $error_message), 200);
     }
 
@@ -190,6 +186,7 @@ function pu_projeto_settings_form()
     $response = array(
         'msg'                   => __('Mensagem enviada com sucesso!', 'pu'),
         'projetos_data'         => $projetos_data,
+        'post'                  => $post,
     );
 
     if ($new_projeto) {

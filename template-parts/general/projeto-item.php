@@ -4,8 +4,7 @@ $post_thumbnail_url = get_the_post_thumbnail_url($post_id, 'full');
 $post_thumbnail_url = $post_thumbnail_url ? $post_thumbnail_url : pu_get_option('pu_default_image');
 $status_do_projeto = get_the_terms($post_id, 'status-do-projeto');
 $status_do_projeto = $status_do_projeto ? $status_do_projeto[0] : null;
-$proprietario_do_projeto = get_the_terms($post_id, 'dono-do-projeto');
-$proprietario_do_projeto = $proprietario_do_projeto ? $proprietario_do_projeto[0] : null;
+$proprietario_do_projeto = get_post_meta($post_id, 'dono_do_projeto', true);
 $preco_projeto = get_post_meta($post_id, 'preco', true);
 ?>
 <div class="projeto-item <?php echo is_single() ? 'mb-4' : ''; ?>">
@@ -16,7 +15,7 @@ $preco_projeto = get_post_meta($post_id, 'preco', true);
             <ul class="projeto-item-info-list">
                 <?php if ($proprietario_do_projeto) { ?>
                     <li>
-                        <strong><?php _e('Proprietário do imóvel:', 'pu'); ?></strong> <?php echo $proprietario_do_projeto->name; ?>
+                        <strong><?php _e('Proprietário do imóvel:', 'pu'); ?></strong> <?php echo $proprietario_do_projeto; ?>
                     </li>
                 <?php } ?>
                 <?php if ($preco_projeto) { ?>

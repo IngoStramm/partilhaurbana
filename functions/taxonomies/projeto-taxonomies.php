@@ -33,7 +33,7 @@ function pu_status_do_projeto_tax()
     );
 }
 
-add_action('init', 'pu_dono_do_projeto_tax', 1);
+// add_action('init', 'pu_dono_do_projeto_tax', 1);
 
 function pu_dono_do_projeto_tax()
 {

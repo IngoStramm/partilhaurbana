@@ -4,9 +4,7 @@ $post_id = $new_projeto ? null : get_the_ID();
 $user_id = get_current_user_id();
 $preco = $new_projeto ? null : get_post_meta($post_id, 'preco', true);
 $preco = !$new_projeto && $preco ? $preco : 0;
-$dono_projeto = $new_projeto ? null : get_the_terms($post_id, 'dono-do-projeto');
-$dono_projeto_nome = $dono_projeto ? $dono_projeto[0]->name : null;
-$dono_projeto_id = $dono_projeto ? $dono_projeto[0]->term_id : null;
+$dono_projeto = get_post_meta($post_id, 'dono_do_projeto', true);
 $post_thumbnail_url = $new_projeto ? '' : get_the_post_thumbnail_url($post_id, 'full');
 $pu_projeto_settings_form_nonce = wp_create_nonce('pu_projeto_settings_form_nonce');
 $estagios = $new_projeto ? [] : get_post_meta($post_id, 'estagios_settings', true);
@@ -44,8 +42,7 @@ $estagios = $new_projeto ? [] : get_post_meta($post_id, 'estagios_settings', tru
                     <div class="col-md-6 mb-4">
                         <div class="form-group">
                             <label class="mb-2 form-label" for="owner"><?php _e('Quem é o dono deste imóvel?', 'pu'); ?></label>
-                            <input type="text" class="form-control" id="owner" name="owner" value="<?php echo $dono_projeto_nome; ?>" required>
-                            <input type="hidden" id="dono-do-projeto-id" name="dono-do-projeto-id" value="<?php echo $dono_projeto_id ? $dono_projeto_id : ''; ?>">
+                            <input type="text" class="form-control" id="owner" name="owner" value="<?php echo $dono_projeto; ?>" required>
                         </div>
                     </div>
                     <div class="col-md-6 mb-4">

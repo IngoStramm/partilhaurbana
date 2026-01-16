@@ -16,7 +16,7 @@ $tipo_valor_options = pu_tipo_valor_options();
 <div class="col-md-12">
     <div class="card card-body">
         <h2 class="section-title"><?php _e('Projeção de lucratividade', 'pu'); ?></h2>
-        <p><?php printf(__('Investimento total previsto no estágios da restauração: <input type="text" id="total-cost-view" class="money-no-decimals-input invisible-input" value="%s" disabled>', 'pu'), pu_format_money($total_cost)); ?><br><?php printf(__('Preço de compra do imóvel: %s €', 'pu'), pu_format_money($preco)); ?></p>
+        <p><?php printf(__('Investimento total previsto no estágios da restauração: <input type="text" id="total-estagios-cost-view" class="money-no-decimals-input invisible-input" value="%s" disabled>', 'pu'), pu_format_money($total_cost)); ?><br><?php printf(__('Preço de compra do imóvel: %s €', 'pu'), pu_format_money($preco)); ?></p>
 
         <div class="table-responsive">
             <table class="table align-middle text-nowrap">

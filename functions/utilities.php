@@ -696,14 +696,12 @@ function pu_projecao_lucratividade_field($post_id, $slug)
 function pu_get_projeto_data($post_id = null)
 {
     $post_id = !$post_id ? get_the_ID() : $post_id;
-    $dono_imovel = get_the_terms($post_id, 'dono-do-projeto');
-    $dono_imovel_nome = $dono_imovel ? $dono_imovel[0]->name : null;
-    $dono_imovel_id = $dono_imovel ? $dono_imovel[0]->term_id : null;
+    $dono_projeto = get_post_meta($post_id, 'dono_do_projeto', true);
     $projeto = new stdClass();
     $projeto->title = get_the_title($post_id);
     $projeto->price = get_post_meta($post_id, 'preco', true);
-    $projeto->owner = $dono_imovel_nome;
-    $projeto->ownerId = $dono_imovel_id;
+    $projeto->observacoes = get_post_meta($post_id, 'observacoes', true);
+    $projeto->owner = $dono_projeto;
     $projeto->estagios = is_singular('projetos') ? get_post_meta($post_id, 'estagios_settings', true) : array();
 
     $projeto->images = array();
@@ -819,4 +817,26 @@ function pu_form_get_field($name, $msg, $field_type = 'text')
     }
 
     return $field;
+}
+
+/**
+ * pu_update_campos_projecao
+ *
+ * @param  int $post_id
+ * @param  string $post_key
+ * @param  string $msg
+ * @param  string $meta_key
+ * @param  boolean $empty_value
+ * @return string/array
+ */
+function pu_update_campos_projecao($post_id, $post_key, $msg, $meta_key, $empty_value = false)
+{
+    if (!isset($_POST[$post_key])) {
+        wp_send_json_error(array('msg' => $msg), 200);
+    }
+    if (!$empty_value && !$_POST[$post_key]) {
+        wp_send_json_error(array('msg' => $msg), 200);
+    }
+    update_post_meta($post_id, $meta_key, sanitize_text_field($_POST[$post_key]));
+    return get_post_meta($post_id, $meta_key, true);
 }
