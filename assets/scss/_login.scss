@@ -1,0 +1,20 @@
+.login-page {
+    background-image: url(../images/backgrounds/login-bg-group.svg);
+    background-repeat: no-repeat;
+    background-position: calc(50% - 300px) top;
+    background-size: 300px;
+    .card {
+        background-color: transparent;
+        box-shadow: none;
+        .form-control {
+            background-color: var(--white);
+        }
+    }
+}
+
+@media (min-width: 768px) {
+    .login-page {
+    background-position: left top;
+    background-size: contain;
+    }
+}

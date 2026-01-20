@@ -126,3 +126,14 @@ function pu_invalid_back()
     $output = '<div class="invalid-feedback">' . __('Campo obrigatório', 'mi') . '</div>';
     return $output;
 }
+
+
+function pu_dismissible_alert($msg, $status)
+{
+    return "
+    <div id='form-alert' class='alert alert-$status alert-dismissible' role='alert'>
+        <div>$msg</div>
+        <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
+    </div>
+    ";
+}

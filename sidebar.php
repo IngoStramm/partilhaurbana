@@ -8,7 +8,7 @@
                 <img
                     src="<?php echo pu_site_logo_url(); ?>"
                     class="dark-logo"
-                    alt="Logo-Dark" />
+                    alt="<?php _e('Logo do site', 'pu'); ?>" />
             </a>
             <a
                 href="javascript:void(0)"
