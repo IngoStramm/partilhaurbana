@@ -19,3 +19,4 @@ require_once 'login-form-handle.php';
 require_once 'login-messages.php';
 require_once 'lostpassword-form-handle.php';
 require_once 'resetpassword-form-handle.php';
+require_once 'email.php';
