@@ -25,8 +25,8 @@ global $total_effort, $total_cost;
                             $estagio_title = isset($estagio['title']) && $estagio['title'] ? $estagio['title'] : null;
                             $estagio_effort = isset($estagio['effort']) && $estagio['effort'] ? $estagio['effort'] : 0;
                             $estagio_cost = isset($estagio['cost']) && $estagio['cost'] ? $estagio['cost'] : 0;
-                            $total_effort += (float)$estagio_effort;
-                            $total_cost += (float)$estagio_cost;
+                            $total_effort += pu_format_number($estagio_effort);
+                            $total_cost += pu_format_number($estagio_cost);
                             if ($estagio_title) {
                     ?>
                                 <tr>
