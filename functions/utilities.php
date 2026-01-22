@@ -840,3 +840,35 @@ function pu_update_campos_projecao($post_id, $post_key, $msg, $meta_key, $empty_
     update_post_meta($post_id, $meta_key, sanitize_text_field($_POST[$post_key]));
     return get_post_meta($post_id, $meta_key, true);
 }
+
+/**
+ * Recursive function to generate a unique username.
+ *
+ * If the username already exists, will add a numerical suffix which will increase until a unique username is found.
+ *
+ * @param string $username
+ *
+ * @return string The unique username.
+ */
+function pu_generate_unique_username($username)
+{
+    $username = sanitize_title($username);
+    static $i;
+    if (null === $i) {
+        $i = 1;
+    } else {
+        $i++;
+    }
+
+    if (!username_exists($username)) {
+        return $username;
+    }
+
+    $new_username = sprintf('%s-%s', $username, $i);
+
+    if (!username_exists($new_username)) {
+        return $new_username;
+    } else {
+        return call_user_func(__FUNCTION__, $username);
+    }
+}

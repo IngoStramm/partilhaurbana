@@ -177,7 +177,7 @@ function pu_projeto_settings_form()
     $projetos_data = pu_get_projeto_data($update_projeto_id);
 
     $response = array(
-        'msg'                   => __('Mensagem enviada com sucesso!', 'pu'),
+        'msg'                   => __('Projeto salvo com sucesso!', 'pu'),
         'projetos_data'         => $projetos_data,
         'post'                  => $post,
     );

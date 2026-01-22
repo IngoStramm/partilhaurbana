@@ -50,3 +50,16 @@ function pu_redirect_to_custom_lostpassword()
         exit;
     }
 }
+
+add_action('wp_logout', 'pu_auto_redirect_after_logout');
+
+/**
+ * pu_auto_redirect_after_logout
+ *
+ * @return void
+ */
+function pu_auto_redirect_after_logout()
+{
+    wp_safe_redirect(get_home_url());
+    exit;
+}

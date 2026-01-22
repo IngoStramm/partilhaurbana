@@ -963,6 +963,31 @@
         showAlert(firstCol, msg, 'success');
     }
 
+    function comparePasswords(e) {
+        const container = e.target.closest('form');
+        const pass1 = document.querySelector('#user_pass');
+        const pass2 = document.querySelector('#repeat_pass');
+        container.classList.remove('was-validated');
+
+        if (pass1.value !== pass2.value) {
+            container.classList.add('was-validated');
+            pass1.setCustomValidity('As senhas precisam combinar.');
+            pass2.setCustomValidity('As senhas precisam combinar.');
+            container.classList.add('was-validated');
+
+        } else {
+            pass1.setCustomValidity('');
+            pass2.setCustomValidity('');
+        }
+    }
+
+    function checkPasswordsEvt() {
+        const passwordInputs = document.querySelectorAll('.check-pass');
+        passwordInputs.forEach(passwordInput => {
+            passwordInput.addEventListener('keyup', comparePasswords);
+        });
+    }
+
     window.addEventListener('load', () => {
         highlightInit();
         inputMasks();
@@ -984,5 +1009,6 @@
         loadedProjecaoForm();
         removeProjeto();
         alertRemovedProjeto();
+        checkPasswordsEvt();
     });
 })();
