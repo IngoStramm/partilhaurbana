@@ -208,6 +208,18 @@ function pu_get_user_name($user_id = '')
     return $nome;
 }
 
+function get_user_email($user_id = '') {
+    $email = '';
+    if (!$user_id) {
+        $user_id = get_current_user_id();
+    }
+    if ($user_id) {
+        $user = get_userdata($user_id);
+        $email = $user->user_email;
+    }
+    return $email;
+}
+
 function pu_text_login_btn()
 {
     $output = '';

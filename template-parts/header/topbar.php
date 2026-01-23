@@ -1,3 +1,7 @@
+<?php
+$user_id = get_current_user_id();
+$empresa = get_user_meta($user_id, 'empresa', true);
+?>
 <!--  Header Start -->
 <header class="topbar">
     <div class="with-vertical">
@@ -78,32 +82,36 @@
                                     <div class="py-3 px-7 pb-0">
                                         <h5
                                             class="mb-0 fs-5 fw-semibold">
-                                            User Profile
+                                            <?php _e('Perfil do usuário', 'pu'); ?>
                                         </h5>
                                     </div>
                                     <div
                                         class="d-flex align-items-center py-9 mx-7 border-bottom">
+                                        <?php /* ?>
                                         <img
                                             src="<?php echo PU_URL; ?>/assets/images/profile/user-1.jpg"
                                             class="rounded-circle"
                                             width="80"
                                             height="80"
-                                            alt="modernize-img" />
+                                            alt="modernize-img" /><?php */ ?>
                                         <div class="ms-3">
                                             <h5
                                                 class="mb-1 fs-3">
                                                 <?php echo pu_get_user_name(); ?>
                                             </h5>
-                                            <span
-                                                class="mb-1 d-block">Designer</span>
+                                            <?php if ($empresa) { ?>
+                                                <span
+                                                    class="mb-1 d-block"><?php echo get_user_meta($user_id, 'empresa', true); ?></span>
+                                            <?php } ?>
                                             <p
                                                 class="mb-0 d-flex align-items-center gap-2">
                                                 <i
                                                     class="ti ti-mail fs-4"></i>
-                                                info@modernize.com
+                                                <?php echo get_user_email(); ?>
                                             </p>
                                         </div>
                                     </div>
+                                    <?php /* ?>
                                     <div class="message-body">
                                         <a
                                             href="./main/page-user-profile.html"
@@ -173,35 +181,9 @@
                                             </div>
                                         </a>
                                     </div>
+                                    <?php */ ?>
                                     <div
                                         class="d-grid py-4 px-7 pt-8">
-                                        <div
-                                            class="upgrade-plan bg-primary-subtle position-relative overflow-hidden rounded-4 p-4 mb-9">
-                                            <div class="row">
-                                                <div
-                                                    class="col-6">
-                                                    <h5
-                                                        class="fs-4 mb-3 fw-semibold">
-                                                        Unlimited
-                                                        Access
-                                                    </h5>
-                                                    <button
-                                                        class="btn btn-primary">
-                                                        Upgrade
-                                                    </button>
-                                                </div>
-                                                <div
-                                                    class="col-6">
-                                                    <div
-                                                        class="m-n4 unlimited-img">
-                                                        <img
-                                                            src="<?php echo PU_URL; ?>/assets/images/backgrounds/unlimited-bg.png"
-                                                            alt="modernize-img"
-                                                            class="w-100" />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                         <a
                                             href="<?php echo wp_logout_url(get_permalink()); ?>"
                                             class="btn btn-outline-primary">Log Out</a>

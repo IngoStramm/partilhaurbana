@@ -56,6 +56,14 @@ function pu_newuser_form_handle()
     }
     $user_password = $_POST['user_pass'];
 
+    if (!isset($_POST['empresa']) || !$_POST['empresa']) {
+
+        $_SESSION['pu_register_new_user_error_message'] = __('Empresa inválida.', 'pu');
+        wp_safe_redirect($register_new_user_page_url);
+        exit;
+    }
+    $empresa = $_POST['empresa'];
+
     // if (!isset($_POST['user_avatar']) || !$_POST['user_avatar']) {
 
     //     $_SESSION['pu_register_new_user_error_message'] = __('Avatar inválido.', 'pu');
@@ -84,11 +92,9 @@ function pu_newuser_form_handle()
         'show_admin_bar_front'     => 'false',     //(string|bool) Whether to display the Admin Bar for the user on the site's front end. Default true.
         'role'                     => 'subscriber',     //(string) User's role.
         // 'locale'                 => '',     //(string) User's locale. Default empty.
-        // 'meta_input'            => array(
-        //     'pu_user_type'      => $user_type,
-        //     'pu_user_phone'     => $user_phone,
-        //     'pu_user_whatsapp'     => $user_whatsapp,
-        // )
+        'meta_input'            => array(
+            'empresa'      => $empresa,
+        )
 
     );
     $register_new_user_result = wp_insert_user($userdata);
