@@ -33,6 +33,10 @@ function pu_projeto_projecao_form()
     $post_id = $_POST['post_id'];
     $projetos_data->post_id = $post_id;
 
+    $previsao_lucro_resultado = isset($_POST['previsao-lucro-resultado']) && !empty($_POST['previsao-lucro-resultado']) ? $_POST['previsao-lucro-resultado'] : null;
+
+    update_post_meta($post_id, 'projeto_lucro', sanitize_text_field($previsao_lucro_resultado));
+
     // Atualiza campos projeção
 
     $certificado_documentacao_valor = pu_update_campos_projecao($post_id, 'certificado-documentacao-valor', __('Não foi possível identificar o valor da certificação.', 'pu'), 'certificado_documentacao_valor', true);
@@ -111,7 +115,8 @@ function pu_projeto_projecao_form()
         'post'                  => $post,
         'projetos_data'         => $projetos_data,
         'estagios'              => $updated_estagios,
-        'projeto_observacoes'   => $updated_projeto_observacoes
+        'projeto_observacoes'   => $updated_projeto_observacoes,
+        'projeto_lucro'         => $previsao_lucro_resultado
     );
 
     wp_send_json_success($response);

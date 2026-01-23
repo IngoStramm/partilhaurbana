@@ -718,10 +718,10 @@
         // console.log('projetoPreco', projetoPreco);
         // lucro = projetoProjecao.preco_venda_valor - projetoPreco;
         // console.log('lucro', lucro);
-        // console.log('reduction', reduction);
+        console.log('reduction', reduction);
         lucro += reduction;
         // console.log('lucro', lucro);
-        // console.log('totalEstagiosCost', totalEstagiosCost);
+        console.log('totalEstagiosCost', totalEstagiosCost);
         lucro -= totalEstagiosCost;
         // console.log('lucro', lucro);
         // console.log('===============');
@@ -1003,6 +1003,7 @@
         inputEstagioEffortEvts();
         inputEstagioCostEvts();
         calcProjecao();
+        calcProjecaoLucro();
         renderProjecaoResultados();
         renderPrevisaoLucro();
         projetoProjecaoForm();

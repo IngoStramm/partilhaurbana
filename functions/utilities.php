@@ -659,7 +659,8 @@ function pu_slugify($text, string $divider = '-')
  */
 function pu_previsao_lucro_liquido($post_id)
 {
-    return __('Ainda não definido', 'pu');
+    $previsao_lucro = get_post_meta($post_id, 'projeto_lucro', true);
+    return $previsao_lucro ? $previsao_lucro : __('Ainda não definido', 'pu');
 }
 
 /**
