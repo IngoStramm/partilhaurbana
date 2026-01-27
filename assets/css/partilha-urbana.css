@@ -467,4 +467,32 @@ textarea.form-control {
     background-size: contain;
   }
 }
+ul.list-with-dots {
+  list-style-position: inside;
+  list-style-type: disc;
+  padding-left: 10px;
+}
+ul.list-with-dots li {
+  margin-bottom: 10px;
+}
+ul.list-with-dots li:last-child {
+  margin-bottom: 0;
+}
+
+.modal .modal-dialog .modal-content {
+  border-radius: 20px;
+}
+
+@media (min-width: 768px) {
+  .modal .modal-dialog .modal-header {
+    padding: 40px;
+  }
+  .modal .modal-dialog.modal-extra-padding .modal-body,
+  .modal .modal-dialog.modal-extra-padding .modal-footer {
+    padding-inline: 80px;
+  }
+  .modal .modal-dialog.modal-extra-padding .modal-footer {
+    padding-bottom: 80px;
+  }
+}
 /*# sourceMappingURL=partilha-urbana.css.map */

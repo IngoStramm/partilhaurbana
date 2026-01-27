@@ -4,7 +4,7 @@
         <button id="btn-salvar-projeto" type="submit" class="btn btn-success" disabled>
             <?php _e('Salvar', 'pu'); ?>
         </button>
-        <button type="submit" class="btn btn-secondary" disabled>
+        <button id="btn-transformar-projeto-em-obra"  type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#modal-transforma-projeto-em-obra" disabled>
             <?php _e('Transformar o projeto em obra', 'pu'); ?>
         </button>
 

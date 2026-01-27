@@ -8,6 +8,7 @@
 
 get_header();
 if (pu_user_can_access()) {
+    do_action('projeto_messages');
     $view = isset($_GET['view']) && $_GET['view'] ? $_GET['view'] : null;
     if ($view === 'settings') {
         get_template_part('template-parts/single/single', 'settings-bar');

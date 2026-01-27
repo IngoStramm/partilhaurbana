@@ -842,8 +842,10 @@
             return;
         }
         const saveBtn = projetoProjecaoForm.querySelector('#btn-salvar-projeto');
+        const convertToObraBtn = projetoProjecaoForm.querySelector('#btn-transformar-projeto-em-obra');
         const removeBtn = projetoProjecaoForm.querySelector('#btn-remove-projeto');
         saveBtn.disabled = false;
+        convertToObraBtn.disabled = false;
         removeBtn.disabled = false;
     }
 

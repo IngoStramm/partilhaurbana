@@ -1,0 +1,26 @@
+.modal {
+    .modal-dialog {
+        .modal-content {
+            border-radius: 20px;
+        }
+    }
+}
+
+@media (min-width: 768px) {
+    .modal {
+        .modal-dialog {
+            .modal-header {
+                padding: 40px;
+            }
+            &.modal-extra-padding {
+                .modal-body,
+                .modal-footer {
+                    padding-inline: 80px;
+                }
+                .modal-footer {
+                    padding-bottom: 80px;
+                }
+            }
+        }
+    }
+}

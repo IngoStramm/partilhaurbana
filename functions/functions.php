@@ -21,3 +21,6 @@ require_once 'lostpassword-form-handle.php';
 require_once 'resetpassword-form-handle.php';
 require_once 'new-user-form-handle.php';
 require_once 'email.php';
+require_once 'modal.php';
+require_once 'convert-projeto-to-obra-form-handle.php';
+require_once 'projeto-messages.php';

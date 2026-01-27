@@ -25,6 +25,7 @@
 
 <body <?php body_class(); ?>>
     <?php do_action('toast'); ?>
+    <?php do_action('modal'); ?>
     <?php do_action('preloader'); ?>
     <div id="main-wrapper">
 
