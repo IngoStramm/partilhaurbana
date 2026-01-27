@@ -1,0 +1,29 @@
+.projeto-progress {
+    position: relative;
+    height: 1.5rem;
+    border-radius: 5px;
+    overflow: hidden;
+    background-image: linear-gradient(to right, #dd4bf3, #4b53f3, #4bf36f);
+    .projeto-progress-bar {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 0;
+        background-color: var(--light-blue);
+    }
+    .projeto-progress-text {
+        position: relative;
+        text-align: center;
+        color: var(--light-blue);
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1.5rem;
+        z-index: 1;
+        text-shadow:
+            1px 0px 3px var(--medium-plus-blue),
+            -1px 0px 3px var(--medium-plus-blue),
+            0px 1px 3px var(--medium-plus-blue),
+            0px -1px 3px var(--medium-plus-blue);
+    }
+}
