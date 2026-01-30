@@ -1061,7 +1061,12 @@
         } else {
             const tr = document.createElement('tr');
             tr.dataset.id = '0';
-            const td = `<td colspan="7">Nenhum resultado encontrado.</td>`;
+            const td =
+                `<td colspan="7">
+                    <div class="not-found-container">
+                        <h2 class="not-found-message">Não há nada por aqui.</h2>
+                    </div>
+                </td>`;
             tr.innerHTML = td;
             rowsArray.push(tr);
         }

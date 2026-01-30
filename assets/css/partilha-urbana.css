@@ -297,6 +297,9 @@ textarea.form-control {
 .table tbody tr td {
   color: inherit;
 }
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
 .table .with-border {
   border-top: var(--bs-border-width) solid var(--bs-table-border-color);
   border-bottom: var(--bs-border-width) solid var(--bs-table-border-color);

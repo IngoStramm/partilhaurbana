@@ -11,6 +11,11 @@
             td {
                 color: inherit;
             }
+            &:last-child {
+                td {
+                    border-bottom: none;
+                }
+            }
         }
     }
     .with-border {
