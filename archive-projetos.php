@@ -14,7 +14,7 @@ get_header(); ?>
 $status = isset($_GET['status']) && ! empty($_GET['status']) ? $_GET['status'] : 'projeto';
 
 $help_section_title = $status === 'projeto' ? __('Projetos', 'pu') : __('Obras', 'pu');
-$help_section_text = $status === 'projeto' ? __('Os projetos ajudam a planejar a obra', 'pu') : __('Acompanhamento completo da obra e transparência com cliente.', 'pu');
+$help_section_text = $status === 'projeto' ? __('Os projetos ajudam a planejar a obra.', 'pu') : __('Acompanhamento completo da obra e transparência com cliente.', 'pu');
 $help_section_url = '#';
 
 get_template_part(
@@ -35,10 +35,15 @@ if (have_posts()) { ?>
         // Load posts loop.
         while (have_posts()) {
             the_post();
+            $post_id = get_the_ID();
             if ($status === 'projeto') {
                 get_template_part('template-parts/archive/archive-projetos', 'content');
             } else {
-                get_template_part('template-parts/archive/archive-obras', 'content');
+                get_template_part(
+                    'template-parts/archive/archive-obras',
+                    'content',
+                    array('post_id' => $post_id)
+                );
             }
         } ?>
         <?php pu_paging_nav(); ?>

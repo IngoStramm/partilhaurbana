@@ -7,6 +7,9 @@
     let projetoObservacoes = ajax_object.projeto_observacoes;
     const projetoPreco = convertStringToNumber(ajax_object.projeto_preco);
     const themeUrl = ajax_object.theme_url;
+    const siteUrl = ajax_object.site_url;
+    const currUrl = ajax_object.curr_url;
+    const lancamentosFinanceiros = ajax_object.lancamentos_financeiros;
     const projecaoInputs = [
         'preco-venda',
         'comissao-impostos',
@@ -20,9 +23,6 @@
     let totalEstagiosEffort = 0;
     let totalEstagiosCost = 0;
     let totalGeralCost = 0;
-    console.log('estagios', estagios);
-    console.log('projetoProjecao', projetoProjecao);
-    console.log('projetoObservacoes', projetoObservacoes);
 
     function showAlert(alertPlaceholder, message, type) {
         const wrapper = document.createElement('div');
@@ -441,7 +441,6 @@
                 if (!form.checkValidity()) {
                     return;
                 }
-                console.log('submit');
                 tooglePreloader();
                 form.classList.add('was-validated');
                 const titleInput = form.querySelector('#title');
@@ -449,9 +448,6 @@
                 const ownerInput = form.querySelector('#owner');
                 const featuredImageInput = form.querySelector('#featured-image');
                 const btn = form.querySelector('button[type="submit"]');
-
-                console.log('ownerInput', ownerInput.value);
-
 
                 if (typeof btn === undefined || !btn) {
                     return;
@@ -477,11 +473,6 @@
                     .then((response) => {
                         const status = response.success ? 'success' : 'danger';
                         showAlert(alertPlaceholder, response.data.msg, status);
-                        console.log('dono-do-projeto-id', response.data.post['dono-do-projeto-id']);
-                        console.log('owner', response.data.post.owner);
-                        console.log('post_owner', response.data.post_owner);
-                        console.log('dono_do_projeto_id', response.data.dono_do_projeto_id);
-                        console.log('post', response.data.post);
                         if (status === 'success') {
                             titleInput.value = response.data.projetos_data.title;
                             priceInput.value = response.data.projetos_data.price;
@@ -714,18 +705,8 @@
 
     function calcProjecaoLucro() {
         let lucro = 0;
-        // console.log('projetoProjecao.preco_venda_valor', projetoProjecao.preco_venda_valor);
-        // console.log('projetoPreco', projetoPreco);
-        // lucro = projetoProjecao.preco_venda_valor - projetoPreco;
-        // console.log('lucro', lucro);
-        console.log('reduction', reduction);
         lucro += reduction;
-        // console.log('lucro', lucro);
-        console.log('totalEstagiosCost', totalEstagiosCost);
         lucro -= totalEstagiosCost;
-        // console.log('lucro', lucro);
-        // console.log('===============');
-
         return lucro;
     }
 
@@ -763,7 +744,6 @@
                 if (!form.checkValidity()) {
                     return;
                 }
-                console.log('submit');
                 tooglePreloader();
                 form.classList.add('was-validated');
                 const precoVendaValorInput = form.querySelector('#preco-venda-valor');
@@ -793,7 +773,6 @@
                     .then((response) => {
                         const status = response.success ? 'success' : 'danger';
                         showAlert(alertPlaceholder, response.data.msg, status);
-                        console.log('response', response);
                         if (status === 'success') {
                             precoVendaValorInput.value = response.data.projetos_data.preco_venda_valor;
                             precoVendaValorInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -915,11 +894,6 @@
             const userId = e.target.dataset.userId;
             const action = e.target.dataset.action;
             const nonce = e.target.dataset.nonce;
-            console.log('Remove projeto id: ', postId);
-            console.log('userId: ', userId);
-            console.log('Action: ', action);
-            console.log('nonce: ', nonce);
-
             const ajaxUrl = ajax_object.ajax_url;
             const data = new FormData();
             data.append('post-id', postId);
@@ -934,7 +908,6 @@
                 .then((response) => {
                     const status = response.success ? 'success' : 'danger';
                     showAlert(alertPlaceholder, response.data.msg, status);
-                    console.log('response', response);
                     if (status === 'success') {
                         if (response.data.redirect_to) {
                             sessionStorage.setItem('removeProjetoMsg', response.data.msg);
@@ -990,6 +963,211 @@
         });
     }
 
+    function selectObraContentRedirect() {
+        const formSelectObraContent = document.querySelector('#form-select-obra-content');
+        if (typeof formSelectObraContent === undefined || !formSelectObraContent) {
+            return;
+        }
+        const selectObraContent = formSelectObraContent.querySelector('#select-obra-content');
+        selectObraContent.addEventListener('input', e => {
+            const selectedOption = e.target.value ? `${siteUrl}/${e.target.value}` : currUrl;
+            formSelectObraContent.requestSubmit();
+        });
+    }
+
+    function financeiroObraTableInit() {
+        if (!lancamentosFinanceiros) {
+            return;
+        }
+        renderFinanceiroObraTable(lancamentosFinanceiros);
+        renderFinanceiroObraTableTotals(lancamentosFinanceiros);
+        financeiroObraTableFiltersEvts();
+    }
+
+    function sortLancamentosFinanceiros(rowsData) {
+        rowsData.sort((a, b) => {
+            const dataA = a.data.split('/').reverse().join('-');
+            const dataB = b.data.split('/').reverse().join('-');
+            return new Date(dataB) - new Date(dataA);
+        });
+    }
+
+    function calcFinanceiroObraTableTotals(rowsData) {
+        let totalEntradas = 0;
+        let totalSaidas = 0;
+        rowsData.forEach(row => {
+            if (row.tipo === 'entrada') {
+                totalEntradas += parseInt(row.valor);
+            } else {
+                totalSaidas += parseInt(row.valor);
+            }
+        });
+        return {
+            'total-entradas': totalEntradas,
+            'total-saidas': totalSaidas
+        };
+    }
+
+    function renderFinanceiroObraTableTotals(rowsData) {
+        const totals = calcFinanceiroObraTableTotals(rowsData);
+
+        const totalEntradaLancamentosInput = document.querySelector('#total-entrada-lancamentos');
+        if (typeof totalEntradaLancamentosInput === undefined || !totalEntradaLancamentosInput) {
+            return;
+        }
+        const totalSaidaLancamentosInput = document.querySelector('#total-saida-lancamentos');
+        if (typeof totalSaidaLancamentosInput === undefined || !totalSaidaLancamentosInput) {
+            return;
+        }
+        totalEntradaLancamentosInput.value = totals['total-entradas'];
+        totalEntradaLancamentosInput.dispatchEvent(new Event('input', { bubbles: true }));
+        totalSaidaLancamentosInput.value = totals['total-saidas'];
+        totalSaidaLancamentosInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function renderFinanceiroObraTable(rowsData) {
+        sortLancamentosFinanceiros(rowsData);
+        console.log('rowsData', rowsData.length);
+
+        const table = document.querySelector('#table-financeiro-obra');
+        if (typeof table === undefined || !table) {
+            return;
+        }
+        const tbody = table.querySelector('tbody');
+        tbody.innerHTML = '';
+        const rowsArray = [];
+        if (rowsData.length > 0) {
+            rowsData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.dataset.id = row.id;
+                const lancamentoTitle = row.comprovante ? `<a class="table-link" target="_blank" href="${row.comprovante}">${row.title}</a>` : row.title;
+                const downloadIcon = row.comprovante ?
+                    `<a target="_blank" href="${row.comprovante}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 19 19" fill="none"><path d="M5.87984 9.50008L9.49888 13.329L13.1179 9.53718M9.49888 3.16675V13.1191M4.07031 15.8334H14.9275" stroke="#5A6A85" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>` :
+                    '';
+                const valor = formatNumberToMoney(row.valor);
+                const td = `
+                <td>${row.data}</td>
+                <td>${row.tipo_icon} ${row.tipo}</td>
+                <td>${row.estagio}</td>
+                <td>${row.author}</td>
+                <td>${lancamentoTitle}</td>
+                <td>${downloadIcon}</td>
+                <td>${valor}</td>`;
+                tr.innerHTML = td;
+                rowsArray.push(tr);
+            });
+        } else {
+            const tr = document.createElement('tr');
+            tr.dataset.id = '0';
+            const td = `<td colspan="7">Nenhum resultado encontrado.</td>`;
+            tr.innerHTML = td;
+            rowsArray.push(tr);
+        }
+        tbody.append(...rowsArray);
+    }
+
+    function financeiroObraTableFiltersEvts() {
+        const estagiosLancamentosSelect = document.querySelector('#estagios-lancamentos');
+        estagiosLancamentosSelect.addEventListener('input', filterLancamentos);
+
+        const dataLancamentosSelectAsc = document.querySelector('#data-lancamentos-asc');
+        dataLancamentosSelectAsc.addEventListener('input', filterLancamentos);
+
+        const dataLancamentosSelectDesc = document.querySelector('#data-lancamentos-desc');
+        dataLancamentosSelectDesc.addEventListener('input', filterLancamentos);
+
+        const search = document.querySelector('#search-lancamentos');
+        search.addEventListener('input', filterLancamentos);
+    }
+
+    function filterLancamentos(e) {
+
+        const selectedEstagio = document.querySelector('#estagios-lancamentos').value;
+        const selectedDataStart = document.querySelector('#data-lancamentos-asc option:checked').dataset.date;
+        const selectedDataEnd = document.querySelector('#data-lancamentos-desc option:checked').dataset.date;
+        const search = document.querySelector('#search-lancamentos').value;
+        let results = lancamentosFinanceiros;
+
+        // Filtra estágio
+        if (selectedEstagio) {
+            results = results.filter(item => {
+                if (item.estagio === selectedEstagio) {
+                    return item;
+                }
+            });
+        }
+
+        // Filtra data início
+        if (selectedDataStart) {
+            results = results.filter(item => {
+                let dateStart = selectedDataStart.replaceAll('/', '-');
+                const [day1, month1, year1] = selectedDataStart.split('/');
+                dateStart = `${month1}-${day1}-${year1}`;
+                dateStart = new Date(dateStart);
+
+                let itemDate = item.data.replaceAll('/', '-');
+                const [day2, month2, year2] = item.data.split('/');
+                itemDate = `${month2}-${day2}-${year2}`;
+                itemDate = new Date(itemDate);
+
+                if (itemDate >= dateStart) {
+                    return item;
+                }
+            });
+        }
+
+        // Filtra data fim
+        if (selectedDataEnd) {
+            results = results.filter(item => {
+                let dateEnd = selectedDataEnd.replaceAll('/', '-');
+                const [day1, month1, year1] = selectedDataEnd.split('/');
+                dateEnd = `${month1}-${day1}-${year1}`;
+                dateEnd = new Date(dateEnd);
+
+                let itemDate = item.data.replaceAll('/', '-');
+                const [day2, month2, year2] = item.data.split('/');
+                itemDate = `${month2}-${day2}-${year2}`;
+                itemDate = new Date(itemDate);
+
+                if (itemDate <= dateEnd) {
+                    return item;
+                }
+            });
+        }
+
+        // Filtra search
+        if (search) {
+            const searchValue = search.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            results = results.filter(item => {
+                const title = item.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const author = item.author.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const tipo = item.tipo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const valor = item.valor.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+                let filter = true;
+                if (title.includes(searchValue)) {
+                    filter = false;
+                }
+                if (author.includes(searchValue)) {
+                    filter = false;
+                }
+                if (tipo.includes(searchValue)) {
+                    filter = false;
+                }
+                if (valor.includes(searchValue)) {
+                    filter = false;
+                }
+                if (!filter) {
+                    return item;
+                }
+            });
+        }
+        renderFinanceiroObraTable(results);
+        renderFinanceiroObraTableTotals(results);
+    }
+
     window.addEventListener('load', () => {
         highlightInit();
         inputMasks();
@@ -1013,5 +1191,7 @@
         removeProjeto();
         alertRemovedProjeto();
         checkPasswordsEvt();
+        selectObraContentRedirect();
+        financeiroObraTableInit();
     });
 })();

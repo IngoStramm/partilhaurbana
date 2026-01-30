@@ -39,7 +39,14 @@ function pu_frontend_scripts()
 
     wp_register_script('apexcharts-script', PU_URL . '/assets/libs/apexcharts/dist/apexcharts.min.js', array('jquery', 'vendor-script', 'bootstrap-script', 'simplebar-script', 'app-init-script', 'theme-script', 'app-script', 'sidebarmenu-script', 'iconify-icon-script', 'highlight-script', 'owl-script'), $version, true);
 
-    wp_register_script('dashboard-script', PU_URL . '/assets/js/dashboards/dashboard.js', array('jquery', 'vendor-script', 'bootstrap-script', 'simplebar-script', 'app-init-script', 'theme-script', 'app-script', 'sidebarmenu-script', 'iconify-icon-script', 'highlight-script', 'owl-script', 'apexcharts-script'), $version, true);
+    // wp_register_script('dashboard-script', PU_URL . '/assets/js/dashboards/dashboard.js', array('jquery', 'vendor-script', 'bootstrap-script', 'simplebar-script', 'app-init-script', 'theme-script', 'app-script', 'sidebarmenu-script', 'iconify-icon-script', 'highlight-script', 'owl-script', 'apexcharts-script'), $version, true);
+
+    #endregion
+
+    # DataTables
+    // wp_register_script('datatables-script', PU_URL . '/assets/libs/datatables.net/js/jquery.dataTables.min.js', array('jquery', 'vendor-script', 'bootstrap-script', 'simplebar-script', 'app-init-script', 'theme-script', 'app-script', 'sidebarmenu-script', 'iconify-icon-script', 'highlight-script', 'owl-script', 'apexcharts-script'), $version, true);
+
+    // wp_register_script('datatable-api-script', PU_URL . '/assets/js/datatable/datatable-api.init.js', array('jquery', 'vendor-script', 'bootstrap-script', 'simplebar-script', 'app-init-script', 'theme-script', 'app-script', 'sidebarmenu-script', 'iconify-icon-script', 'highlight-script', 'owl-script', 'apexcharts-script', 'datatables-script'), $version, true);
 
     #endregion
 
@@ -50,6 +57,7 @@ function pu_frontend_scripts()
     wp_enqueue_script('partilha-urbana-script');
 
     $projetos_data = pu_get_projeto_data();
+    $lancamentos_financeiros = pu_get_lancamentos_financeiros_obra();
 
     wp_localize_script('partilha-urbana-script', 'ajax_object', array(
         'ajax_url'              => admin_url('admin-ajax.php'),
@@ -59,7 +67,10 @@ function pu_frontend_scripts()
         'projeto_projecao'      => $projetos_data->projecao,
         'projeto_preco'         => $projetos_data->price,
         'projeto_observacoes'   => $projetos_data->observacoes,
-        'theme_url'             => PU_URL
+        'theme_url'             => PU_URL,
+        'site_url'             => get_site_url(),
+        'curr_url'              => get_permalink(),
+        'lancamentos_financeiros'   => $lancamentos_financeiros
     ));
 
 

@@ -3,7 +3,7 @@
 add_action('pre_get_posts', 'pu_filter_archive_by_status');
 function pu_filter_archive_by_status($query)
 {
-    if (!$query->is_main_query() || is_admin() || !$query->is_archive()) {
+    if (!$query->is_main_query() || is_admin() || !$query->is_post_type_archive('projetos')) {
         return;
     }
     $status = isset($_GET['status']) && ! empty($_GET['status']) ? $_GET['status'] : 'projeto';
@@ -22,7 +22,7 @@ function pu_filter_archive_by_status($query)
 add_action('pre_get_posts', 'pu_pre_get_posts_author_archives');
 function pu_pre_get_posts_author_archives($query)
 {
-    if (!$query->is_main_query() || is_admin() || !$query->is_archive()) {
+    if (!$query->is_main_query() || is_admin() || !$query->is_post_type_archive('projetos')) {
         return;
     }
     $user_id = get_current_user_id();

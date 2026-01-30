@@ -1,6 +1,6 @@
 <?php
 
-add_action('admin_post_pu_newuser_form', 'pu_register_new_user_form_handle');
+add_action('admin_post_pu_newuser_form', 'pu_newuser_form_handle');
 add_action('admin_post_nopriv_pu_newuser_form', 'pu_newuser_form_handle');
 
 /**

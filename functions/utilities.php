@@ -208,7 +208,8 @@ function pu_get_user_name($user_id = '')
     return $nome;
 }
 
-function get_user_email($user_id = '') {
+function get_user_email($user_id = '')
+{
     $email = '';
     if (!$user_id) {
         $user_id = get_current_user_id();
@@ -885,3 +886,189 @@ function pu_generate_unique_username($username)
         return call_user_func(__FUNCTION__, $username);
     }
 }
+
+/**
+ * pu_obra_posts_types
+ * 
+ * keys: 'financeiro', 'diario-da-obra'
+ *
+ * @return array
+ */
+function pu_obra_posts_types()
+{
+    $post_types = array(
+        'financeiro' => __('Financeiro', 'pu'),
+        'diario-da-obra' => __('Diário da Obra', 'pu'),
+    );
+    return $post_types;
+}
+
+/**
+ * pu_get_lancamentos_financeiro
+ *
+ * @param  int $obra_id
+ * @return array
+ */
+function pu_get_lancamentos_financeiro($obra_id)
+{
+    $args = array(
+        'post_type' => 'financeiro',
+        'nopaging' => true,
+        'meta_key' => 'projeto_id',
+        'meta_value' => $obra_id,
+        'order'     => 'DESC',
+        'orderby'   => 'date'
+    );
+    $posts = get_posts($args);
+    $lancamentos_financeiros = [];
+    foreach ($posts as $post) {
+        $lancamento = new stdClass();
+        $post_id = $post->ID;
+        $lancamento->id = $post_id;
+        $lancamento->title = $post->post_title;
+        $lancamento->publish_date = $post->post_date;
+
+        $author_id = $post->post_author;
+        $user_info = get_userdata($author_id);
+        $lancamento->author = $user_info->display_name;;
+
+        $tipo = get_post_meta($post_id, 'tipo', true);
+        $lancamento->tipo = $tipo;
+
+        $valor = get_post_meta($post_id, 'valor', true);
+        $lancamento->valor = $valor;
+
+        $data = get_post_meta($post_id, 'data', true);
+        $lancamento->data = wp_date('d/m/Y', strtotime($data));
+
+        $comprovante = get_post_meta($post_id, 'comprovante', true);
+        $lancamento->comprovante = $comprovante;
+
+        $estagio_id = get_post_meta($post_id, 'estagio_lancamento', true);
+        $projeto_id = get_post_meta($post_id, 'projeto_id', true);
+        $estagios_projeto = get_post_meta($projeto_id, 'estagios_settings', true);
+
+        $estagio = isset($estagios_projeto[$estagio_id]['title']) && $tipo === 'saida' ? $estagios_projeto[$estagio_id]['title'] : '';
+        $lancamento->estagio = $estagio;
+
+        $tipo_icon = $tipo === 'saida' ?
+            '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+  <path d="M9 14.25L4.5 9.75M9 14.25L13.5 9.75M9 14.25L9 3.75" stroke="#FA896B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>' :
+            '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+  <path d="M9 3.75L13.5 8.25M9 3.75L4.5 8.25M9 3.75V14.25" stroke="#52D85F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>';
+        $lancamento->tipo_icon = $tipo_icon;
+
+        $lancamentos_financeiros[] = $lancamento;
+    }
+    return $lancamentos_financeiros;
+}
+
+/**
+ * pu_get_lancamentos_financeiros_obra
+ *
+ * @return array
+ */
+function pu_get_lancamentos_financeiros_obra()
+{
+    if (!is_post_type_archive('financeiro')) {
+        return;
+    }
+    $obra_id = isset($_GET['obra_id']) && $_GET['obra_id'] ? $_GET['obra_id'] : null;
+    if (!$obra_id) {
+        return;
+    }
+    $lancamentos = pu_get_lancamentos_financeiro($obra_id);
+    return $lancamentos;
+}
+
+/**
+ * pu_get_datas_lancamento_financeiro_obra_asc
+ *
+ * @return array
+ */
+function pu_get_datas_lancamento_financeiro_obra_asc()
+{
+    if (!is_post_type_archive('financeiro')) {
+        return;
+    }
+    $obra_id = isset($_GET['obra_id']) && $_GET['obra_id'] ? $_GET['obra_id'] : null;
+    if (!$obra_id) {
+        return;
+    }
+    $lancamentos = pu_get_lancamentos_financeiro($obra_id);
+    $datas = [];
+    foreach ($lancamentos as $lancamento) {
+        $datas[] = $lancamento->data;
+    }
+    return pu_sort_date_array($datas);
+}
+
+/**
+ * pu_get_last_lancamento_financeiro_obra
+ *
+ * @return array
+ */
+function pu_get_datas_lancamento_financeiro_obra_desc()
+{
+    if (!is_post_type_archive('financeiro')) {
+        return;
+    }
+    $obra_id = isset($_GET['obra_id']) && $_GET['obra_id'] ? $_GET['obra_id'] : null;
+    if (!$obra_id) {
+        return;
+    }
+    $lancamentos = pu_get_lancamentos_financeiro($obra_id);
+    $datas = [];
+    foreach ($lancamentos as $lancamento) {
+        $datas[] = $lancamento->data;
+    }
+    return pu_sort_date_array($datas, false);
+}
+
+/**
+ * pu_sort_date_array
+ *
+ * @param  array $dates
+ * @param  boolean $asc
+ * @return array
+ */
+function pu_sort_date_array($dates, $asc = true)
+{
+    if ($asc) {
+        usort($dates, function ($date1_str, $date2_str) {
+            // Create DateTime objects from the specific format "d/m/Y"
+            $date1 = DateTime::createFromFormat('d/m/Y', $date1_str);
+            $date2 = DateTime::createFromFormat('d/m/Y', $date2_str);
+
+            // Use the spaceship operator (<=>) for easy comparison (PHP 7+)
+            // For ascending order, $date1 <=> $date2
+            return $date1 <=> $date2;
+        });
+    } else {
+        usort($dates, function ($date1_str, $date2_str) {
+            // Create DateTime objects from the specific format "d/m/Y"
+            $date1 = DateTime::createFromFormat('d/m/Y', $date1_str);
+            $date2 = DateTime::createFromFormat('d/m/Y', $date2_str);
+
+            // Use the spaceship operator (<=>) for easy comparison (PHP 7+)
+            // For ascending order, $date1 <=> $date2
+            return $date2 <=> $date1;
+        });
+    }
+    return $dates;
+}
+
+
+// function pu_return_estagios_options()
+// {
+//     $post_id = get_the_ID();
+//     $estagios = [];
+//     $estagios_settings = get_post_meta($post_id, 'estagios_settings', true);
+//     pu_debug($estagios_settings);
+//     foreach ($estagios_settings as $key => $estagio) {
+//         $estagios[$key] = $estagio['title'];
+//     }
+//     return $estagios;
+// }

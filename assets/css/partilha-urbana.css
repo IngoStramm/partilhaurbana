@@ -238,6 +238,7 @@
   font-weight: 600;
   line-height: 1.2em;
   margin: 0 0 30px;
+  flex-shrink: 0;
 }
 
 textarea.form-control {
@@ -280,8 +281,21 @@ textarea.form-control {
   outline: none;
 }
 
+.table {
+  color: var(--medium-plus-blue);
+}
 .table > thead {
+  color: inherit;
   vertical-align: middle;
+}
+.table tbody {
+  color: inherit;
+}
+.table tbody tr {
+  color: inherit;
+}
+.table tbody tr td {
+  color: inherit;
 }
 .table .with-border {
   border-top: var(--bs-border-width) solid var(--bs-table-border-color);
@@ -290,8 +304,22 @@ textarea.form-control {
 .table .no-border {
   border: none;
 }
+.table tfoot {
+  color: inherit;
+}
+.table tfoot tr {
+  color: inherit;
+}
 .table tfoot tr:last-child td {
+  color: inherit;
   border-bottom: none;
+}
+.table .table-link {
+  text-decoration-line: underline; /* Required to specify a line type */
+  color: inherit;
+  text-decoration-color: var(--medium-plus-blue);
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 0.1em;
 }
 
 .previsao-lucro-resultado-container {
@@ -497,6 +525,14 @@ ul.list-with-dots li:last-child {
     padding-bottom: 80px;
   }
 }
+.search-input {
+  background-image: url(../icons/icon-spy-glass.svg);
+  background-repeat: no-repeat;
+  background-position: calc(100% - 10px) center;
+  background-size: 24px;
+  padding-right: 45px;
+}
+
 .projeto-progress {
   position: relative;
   height: 1.5rem;
@@ -521,5 +557,46 @@ ul.list-with-dots li:last-child {
   line-height: 1.5rem;
   z-index: 1;
   text-shadow: 1px 0px 3px var(--medium-plus-blue), -1px 0px 3px var(--medium-plus-blue), 0px 1px 3px var(--medium-plus-blue), 0px -1px 3px var(--medium-plus-blue);
+}
+
+.lancamentos-totals {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex-grow: 1;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--white);
+  background-clip: padding-box;
+  border: var(--bs-border-width) solid #dfe5ef;
+  border-radius: 7px;
+  box-shadow: var(--bs-box-shadow-inset);
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.lancamentos-totals.total-entrada {
+  background-color: var(--bs-success);
+  border-color: var(--bs-success);
+}
+.lancamentos-totals.total-saida {
+  background-color: var(--bs-danger);
+  border-color: var(--bs-danger);
+}
+.lancamentos-totals input {
+  field-sizing: content;
+  display: inline-block;
+  border: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 0;
+  color: inherit;
+  background-color: transparent;
+  user-select: none;
+}
+.lancamentos-totals input:focus {
+  outline: none;
 }
 /*# sourceMappingURL=partilha-urbana.css.map */

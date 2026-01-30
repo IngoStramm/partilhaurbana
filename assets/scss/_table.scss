@@ -1,6 +1,17 @@
 .table {
+    color: var(--medium-plus-blue);
     > thead {
+        color: inherit;
         vertical-align: middle;
+    }
+    tbody {
+        color: inherit;
+        tr {
+            color: inherit;
+            td {
+                color: inherit;
+            }
+        }
     }
     .with-border {
         border-top: var(--bs-border-width) solid var(--bs-table-border-color);
@@ -10,12 +21,22 @@
         border: none;
     }
     tfoot {
+        color: inherit;
         tr {
+            color: inherit;
             &:last-child {
                 td {
+                    color: inherit;
                     border-bottom: none;
                 }
             }
         }
+    }
+    .table-link {
+        text-decoration-line: underline; /* Required to specify a line type */
+        color: inherit;
+        text-decoration-color: var(--medium-plus-blue);
+        text-underline-offset: 0.2em;
+        text-decoration-thickness: 0.1em;
     }
 }
