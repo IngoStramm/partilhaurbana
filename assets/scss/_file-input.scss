@@ -1,0 +1,25 @@
+.arquivo-lancamento-url-text {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    font-size: .8rem;
+    .remove-file-btn {
+        display: flex;
+        flex-shrink: 0;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
+        border: none;
+        background-color: var(--bs-danger);
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        svg {
+            stroke: var(--bs-white);
+        }
+    }
+}

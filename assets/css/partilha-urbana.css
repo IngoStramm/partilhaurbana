@@ -80,6 +80,11 @@
   margin-left: auto;
 }
 
+.btn-no-style {
+  background-color: transparent;
+  border: none;
+}
+
 .help-header {
   background-color: var(--bs-primary);
   color: var(--bs-white);
@@ -601,5 +606,31 @@ ul.list-with-dots li:last-child {
 }
 .lancamentos-totals input:focus {
   outline: none;
+}
+
+.arquivo-lancamento-url-text {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  font-size: 0.8rem;
+}
+.arquivo-lancamento-url-text .remove-file-btn {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background-color: var(--bs-danger);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+}
+.arquivo-lancamento-url-text .remove-file-btn svg {
+  stroke: var(--bs-white);
 }
 /*# sourceMappingURL=partilha-urbana.css.map */

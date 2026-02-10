@@ -939,7 +939,7 @@ function pu_get_lancamentos_financeiro($obra_id)
         $lancamento->valor = $valor;
 
         $data = get_post_meta($post_id, 'data', true);
-        $lancamento->data = wp_date('d/m/Y', strtotime($data));
+        $lancamento->data = $data;
 
         $comprovante = get_post_meta($post_id, 'comprovante', true);
         $lancamento->comprovante = $comprovante;
@@ -1039,8 +1039,8 @@ function pu_sort_date_array($dates, $asc = true)
     if ($asc) {
         usort($dates, function ($date1_str, $date2_str) {
             // Create DateTime objects from the specific format "d/m/Y"
-            $date1 = DateTime::createFromFormat('d/m/Y', $date1_str);
-            $date2 = DateTime::createFromFormat('d/m/Y', $date2_str);
+            $date1 = DateTime::createFromFormat('d-m-Y', $date1_str);
+            $date2 = DateTime::createFromFormat('d-m-Y', $date2_str);
 
             // Use the spaceship operator (<=>) for easy comparison (PHP 7+)
             // For ascending order, $date1 <=> $date2
@@ -1049,8 +1049,8 @@ function pu_sort_date_array($dates, $asc = true)
     } else {
         usort($dates, function ($date1_str, $date2_str) {
             // Create DateTime objects from the specific format "d/m/Y"
-            $date1 = DateTime::createFromFormat('d/m/Y', $date1_str);
-            $date2 = DateTime::createFromFormat('d/m/Y', $date2_str);
+            $date1 = DateTime::createFromFormat('d-m-Y', $date1_str);
+            $date2 = DateTime::createFromFormat('d-m-Y', $date2_str);
 
             // Use the spaceship operator (<=>) for easy comparison (PHP 7+)
             // For ascending order, $date1 <=> $date2
@@ -1058,6 +1058,76 @@ function pu_sort_date_array($dates, $asc = true)
         });
     }
     return $dates;
+}
+
+/**
+ * pu_get_lancamento_financeiro_by_id
+ *
+ * @param  int $post_id
+ * @return object
+ */
+function pu_get_lancamento_financeiro_by_id($post_id)
+{
+    $post = get_post($post_id);
+    $lancamento = new stdClass();
+    if ($post) {
+        $lancamento->id = $post_id;
+        $lancamento->title = $post->post_title;
+        $lancamento->publish_date = $post->post_date;
+
+        $author_id = $post->post_author;
+        $user_info = get_userdata($author_id);
+        $lancamento->author = $user_info->display_name;;
+
+        $tipo = get_post_meta($post_id, 'tipo', true);
+        $lancamento->tipo = $tipo;
+
+        $valor = get_post_meta($post_id, 'valor', true);
+        $lancamento->valor = $valor;
+
+        $date = get_post_meta($post_id, 'data', true);
+        $lancamento->date = $date;
+
+        $comprovante = get_post_meta($post_id, 'comprovante', true);
+        $lancamento->comprovante = $comprovante;
+
+        $estagio_id = get_post_meta($post_id, 'estagio_lancamento', true);
+        $projeto_id = get_post_meta($post_id, 'projeto_id', true);
+        $estagios_projeto = get_post_meta($projeto_id, 'estagios_settings', true);
+
+        $estagio = isset($estagios_projeto[$estagio_id]['title']) && $tipo === 'saida' ? $estagios_projeto[$estagio_id]['title'] : '';
+        $lancamento->estagio = $estagio;
+
+        $tipo_icon = $tipo === 'saida' ?
+            '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+  <path d="M9 14.25L4.5 9.75M9 14.25L13.5 9.75M9 14.25L9 3.75" stroke="#FA896B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>' :
+            '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
+  <path d="M9 3.75L13.5 8.25M9 3.75L4.5 8.25M9 3.75V14.25" stroke="#52D85F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>';
+        $lancamento->tipo_icon = $tipo_icon;
+    }
+    return $lancamento;
+}
+
+/**
+ * pu_get_estagio_index
+ *
+ * @param  int $post_id
+ * @param  string $title
+ * @return string
+ */
+function pu_get_estagio_index($post_id, $title)
+{
+    $projeto_id = get_post_meta($post_id, 'projeto_id', true);
+    $estagio_index = null;
+    $estagios = get_post_meta($projeto_id, 'estagios_settings', true);
+    foreach ($estagios as $k => $estagio) {
+        if ($estagio['title'] === $title) {
+            $estagio_index = (string)$k;
+        }
+    }
+    return $estagio_index;
 }
 
 

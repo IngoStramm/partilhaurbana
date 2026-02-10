@@ -1,6 +1,6 @@
 <?php
 
-add_action('wp_ajax_nopriv_projeto_settings_form', 'pu_projeto_settings_form');
+add_action('wp_ajax_nopriv_pu_projeto_settings_form', 'pu_projeto_settings_form');
 add_action('wp_ajax_pu_projeto_settings_form', 'pu_projeto_settings_form');
 
 function pu_projeto_settings_form()
@@ -33,7 +33,6 @@ function pu_projeto_settings_form()
     $post_title = pu_form_get_field('title', __('Título do projeto ausente.', 'pu'));
     $post_price = pu_form_get_field('price', __('Preço do projeto ausente.', 'pu'), 'money');
     $post_owner = pu_form_get_field('owner', __('Dono do projeto ausente.', 'pu'));
-    $post = $_POST;
 
     $estagios = pu_form_get_field('estagios', __('Estágios do projeto ausente.', 'pu'), 'array');
     // Argumentos para salvar/criar o post
@@ -178,8 +177,7 @@ function pu_projeto_settings_form()
 
     $response = array(
         'msg'                   => __('Projeto salvo com sucesso!', 'pu'),
-        'projetos_data'         => $projetos_data,
-        'post'                  => $post,
+        'projetos_data'         => $projetos_data
     );
 
     if ($new_projeto) {

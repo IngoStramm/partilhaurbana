@@ -9,7 +9,8 @@
     const themeUrl = ajax_object.theme_url;
     const siteUrl = ajax_object.site_url;
     const currUrl = ajax_object.curr_url;
-    const lancamentosFinanceiros = ajax_object.lancamentos_financeiros;
+    let lancamentosFinanceiros = ajax_object.lancamentos_financeiros;
+
     const projecaoInputs = [
         'preco-venda',
         'comissao-impostos',
@@ -421,6 +422,23 @@
         });
     }
 
+    function setInputValue(inputEl, val = '') {
+        inputEl.value = val;
+        inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function setDateInputValue(inputEl, val = '') {
+        if (val) {
+            const parts = val.split('-');
+            const day = parts[0];
+            const month = parts[1];
+            const year = parts[2];
+            const formattedDateString = `${year}-${month}-${day}`;
+            val = formattedDateString;
+        }
+        setInputValue(inputEl, val);
+    }
+
     function projetoSettingsForm() {
         const projetoSettingsForms = document.querySelectorAll('.form-settings-projeto');
         const alertPlaceholder = document.getElementById('form-alert-placeholder');
@@ -631,8 +649,8 @@
         const formattedMoney = new Intl.NumberFormat('de-DE', {
             style: 'currency',
             currency: 'EUR',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
         });
         return formattedMoney.format(num);
     }
@@ -981,13 +999,14 @@
         }
         renderFinanceiroObraTable(lancamentosFinanceiros);
         renderFinanceiroObraTableTotals(lancamentosFinanceiros);
+        // updatefinanceiroDatesFiltersOptions(lancamentosFinanceiros);
         financeiroObraTableFiltersEvts();
     }
 
     function sortLancamentosFinanceiros(rowsData) {
         rowsData.sort((a, b) => {
-            const dataA = a.data.split('/').reverse().join('-');
-            const dataB = b.data.split('/').reverse().join('-');
+            const dataA = a.data.split('-').reverse().join('-');
+            const dataB = b.data.split('-').reverse().join('-');
             return new Date(dataB) - new Date(dataA);
         });
     }
@@ -997,9 +1016,9 @@
         let totalSaidas = 0;
         rowsData.forEach(row => {
             if (row.tipo === 'entrada') {
-                totalEntradas += parseInt(row.valor);
+                totalEntradas += parseFloat(row.valor);
             } else {
-                totalSaidas += parseInt(row.valor);
+                totalSaidas += parseFloat(row.valor);
             }
         });
         return {
@@ -1027,8 +1046,6 @@
 
     function renderFinanceiroObraTable(rowsData) {
         sortLancamentosFinanceiros(rowsData);
-        console.log('rowsData', rowsData.length);
-
         const table = document.querySelector('#table-financeiro-obra');
         if (typeof table === undefined || !table) {
             return;
@@ -1047,15 +1064,46 @@
                 </a>` :
                     '';
                 const valor = formatNumberToMoney(row.valor);
-                const td = `
-                <td>${row.data}</td>
-                <td>${row.tipo_icon} ${row.tipo}</td>
-                <td>${row.estagio}</td>
-                <td>${row.author}</td>
-                <td>${lancamentoTitle}</td>
-                <td>${downloadIcon}</td>
-                <td>${valor}</td>`;
-                tr.innerHTML = td;
+                const btnModal = document.createElement('button');
+                btnModal.classList.add('btn-no-style');
+                btnModal.type = 'button';
+                btnModal.dataset.id = row.id;
+                btnModal.dataset.bsToggle = 'modal';
+                btnModal.dataset.bsTarget = '#modal-editar-lancamento-financeiro-obra';
+                btnModal.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5A6A85" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-pencil"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" /><path d="M13.5 6.5l4 4" /></svg>`;
+
+                const td1 = document.createElement('td');
+                const formattedDateString = row.data.replaceAll('-', '/');
+                td1.append(formattedDateString);
+                tr.append(td1);
+
+                const td2 = document.createElement('td');
+                td2.innerHTML = `${row.tipo_icon} ${row.tipo}`;
+                tr.append(td2);
+
+                const td3 = document.createElement('td');
+                td3.append(row.estagio);
+                tr.append(td3);
+
+                const td4 = document.createElement('td');
+                td4.append(row.author);
+                tr.append(td4);
+
+                const td5 = document.createElement('td');
+                td5.innerHTML = lancamentoTitle;
+                tr.append(td5);
+
+                const td6 = document.createElement('td');
+                td6.innerHTML = downloadIcon;
+                tr.append(td6);
+
+                const td7 = document.createElement('td');
+                td7.append(valor);
+                tr.append(td7);
+
+                const td8 = document.createElement('td');
+                td8.append(btnModal);
+                tr.append(td8);
                 rowsArray.push(tr);
             });
         } else {
@@ -1073,6 +1121,32 @@
         tbody.append(...rowsArray);
     }
 
+    function parseDate(str) {
+        const [day, month, year] = str.split('-').map(Number);
+        // O mês no JS começa em 0 (Janeiro = 0, Fevereiro = 1, etc.)
+        return new Date(year, month - 1, day);
+    }
+
+    function updatefinanceiroDatesFiltersOptions(lancamentosFinanceiros) {
+        const dataLancamentosSelectAsc = document.querySelector('#data-lancamentos-asc');
+        const dataLancamentosSelectDesc = document.querySelector('#data-lancamentos-desc');
+        const datesAscMap = new Map();
+        let datesDesc = [];
+        const uniqueDates = new Set();
+        lancamentosFinanceiros.forEach(item => {
+            datesAscMap.set(item.data, item);
+            datesDesc.push({ date: item.data });
+        });
+        const datesAsc = Array.from(datesAscMap.values());
+        console.log('datesAsc', datesAsc);
+        datesAsc.sort((a, b) => parseDate(a.date) - parseDate(b.date));
+        datesDesc.sort((a, b) => parseDate(b.date) - parseDate(a.date));
+
+
+        console.log('datesDesc', datesDesc);
+
+    }
+
     function financeiroObraTableFiltersEvts() {
         const estagiosLancamentosSelect = document.querySelector('#estagios-lancamentos');
         estagiosLancamentosSelect.addEventListener('input', filterLancamentos);
@@ -1088,10 +1162,9 @@
     }
 
     function filterLancamentos(e) {
-
         const selectedEstagio = document.querySelector('#estagios-lancamentos').value;
-        const selectedDataStart = document.querySelector('#data-lancamentos-asc option:checked').dataset.date;
-        const selectedDataEnd = document.querySelector('#data-lancamentos-desc option:checked').dataset.date;
+        const selectedDataStart = document.querySelector('#data-lancamentos-asc').value;
+        const selectedDataEnd = document.querySelector('#data-lancamentos-desc').value;
         const search = document.querySelector('#search-lancamentos').value;
         let results = lancamentosFinanceiros;
 
@@ -1107,13 +1180,13 @@
         // Filtra data início
         if (selectedDataStart) {
             results = results.filter(item => {
-                let dateStart = selectedDataStart.replaceAll('/', '-');
-                const [day1, month1, year1] = selectedDataStart.split('/');
+                let dateStart = selectedDataStart;
+                const [year1, month1, day1] = selectedDataStart.split('-');
                 dateStart = `${month1}-${day1}-${year1}`;
                 dateStart = new Date(dateStart);
 
-                let itemDate = item.data.replaceAll('/', '-');
-                const [day2, month2, year2] = item.data.split('/');
+                let itemDate = item.data;
+                const [day2, month2, year2] = item.data.split('-');
                 itemDate = `${month2}-${day2}-${year2}`;
                 itemDate = new Date(itemDate);
 
@@ -1126,13 +1199,13 @@
         // Filtra data fim
         if (selectedDataEnd) {
             results = results.filter(item => {
-                let dateEnd = selectedDataEnd.replaceAll('/', '-');
-                const [day1, month1, year1] = selectedDataEnd.split('/');
+                let dateEnd = selectedDataEnd;
+                const [year1, month1, day1] = selectedDataEnd.split('-');
                 dateEnd = `${month1}-${day1}-${year1}`;
                 dateEnd = new Date(dateEnd);
 
-                let itemDate = item.data.replaceAll('/', '-');
-                const [day2, month2, year2] = item.data.split('/');
+                let itemDate = item.data;
+                const [day2, month2, year2] = item.data.split('-');
                 itemDate = `${month2}-${day2}-${year2}`;
                 itemDate = new Date(itemDate);
 
@@ -1171,7 +1244,230 @@
         }
         renderFinanceiroObraTable(results);
         renderFinanceiroObraTableTotals(results);
+        // updatefinanceiroDatesFiltersOptions(results);
     }
+
+    function resetLancamentoFinanceiroInputs() {
+        const form = document.getElementById('form-edit-lancamento-financeiro-obra');
+        if (typeof form === undefined || !form) {
+            return;
+        }
+        const dataLancamentoInput = form.querySelector('#data-lancamento');
+        const tipoLancamentoSelect = form.querySelector('#tipo-lancamento');
+        const estagioLancamentoSelect = form.querySelector('#estagio-lancamento');
+        const titleLancamentoInput = form.querySelector('#title-lancamento');
+        const valorLancamentoInput = form.querySelector('#valor-lancamento');
+        const arquivoLancamentoInput = form.querySelector('#arquivo-lancamento');
+        const arquivoLancamentoUrlInput = form.querySelector('#arquivo-lancamento-url');
+        const arquivoLancamentoUrlDiv = form.querySelector('#arquivo-lancamento-url-text');
+        const postIdInput = form.querySelector('[name="post_id"]');
+        const btnDelete = form.querySelector('#btn-delete-lancamento');
+        const btnSubmit = form.querySelector('button[type="submit"]');
+
+        form.classList.remove('was-validate');
+        form.classList.add('not-validate');
+
+        setInputValue(dataLancamentoInput);
+        setInputValue(tipoLancamentoSelect);
+        setInputValue(estagioLancamentoSelect);
+        setInputValue(titleLancamentoInput);
+        setInputValue(valorLancamentoInput, '0,00');
+        setInputValue(arquivoLancamentoInput);
+        setInputValue(arquivoLancamentoUrlInput);
+        setInputValue(postIdInput);
+        arquivoLancamentoUrlDiv.innerHTML = '';
+
+        btnDelete.disabled = false;
+        btnSubmit.innerHTML = btnSubmit.dataset.originalText;
+        btnSubmit.disabled = false;
+    }
+
+    function modalLancamentoFinanceiro() {
+        const modalLancamentoFinanceiro = document.getElementById('modal-editar-lancamento-financeiro-obra');
+        if (typeof modalLancamentoFinanceiro === undefined || !modalLancamentoFinanceiro) {
+            return;
+        }
+        modalLancamentoFinanceiro.addEventListener('hidden.bs.modal', event => {
+            resetLancamentoFinanceiroInputs();
+            const alertPlaceholder = document.getElementById('modal-alert-placeholder');
+            alertPlaceholder.innerHTML = '';
+        });
+        modalLancamentoFinanceiro.addEventListener('show.bs.modal', event => {
+            resetLancamentoFinanceiroInputs();
+            const container = event.target;
+            const postId = event.relatedTarget.dataset.id;
+            const btnSubmit = container.querySelector('#btn-save-lancamento-financeiro');
+            const btnDelete = container.querySelector('#btn-delete-lancamento');
+            btnSubmit.disabled = true;
+            btnDelete.disabled = true;
+            const alertPlaceholder = document.getElementById('modal-alert-placeholder');
+            alertPlaceholder.innerHTML = '';
+            if (typeof postId && postId) {
+                getLancamentoFinanceiroData(postId, container);
+            } else {
+                btnSubmit.disabled = false;
+            }
+        });
+        const arquivoLancamentoInput = document.querySelector('#arquivo-lancamento');
+        const arquivoLancamentoUrlInput = document.querySelector('#arquivo-lancamento-url');
+        arquivoLancamentoInput.addEventListener('input', fileInputEvt);
+        arquivoLancamentoUrlInput.addEventListener('input', urlInputEvt);
+    }
+
+    function getLancamentoFinanceiroData(postId, container) {
+        const btnSubmit = container.querySelector('#btn-save-lancamento-financeiro');
+        const btnDelete = container.querySelector('#btn-delete-lancamento');
+        const alertPlaceholder = document.getElementById('modal-alert-placeholder');
+        const ajaxUrl = ajax_object.ajax_url;
+        const data = new FormData();
+        data.append('action', 'pu_get_lancamento_financeiro_data');
+        data.append('post_id', postId);
+        fetch(ajaxUrl, {
+            method: 'POST',
+            body: data
+        })
+            .then((response) => response.json())
+            .then((response) => {
+                const status = response.success ? 'success' : 'danger';
+                // showAlert(alertPlaceholder, response.data.msg, status);
+                if (status === 'success') {
+                    setLancamentoFinanceiroData(response.data.lancamento, container);
+                }
+            })
+            .catch((error) => {
+                showAlert(alertPlaceholder, error, 'danger');
+            })
+            .finally(() => {
+                btnSubmit.disabled = false;
+                btnDelete.disabled = false;
+            });
+    }
+
+    function setLancamentoFinanceiroData(lancamento, container) {
+        const dataLancamentoInput = container.querySelector('#data-lancamento');
+        const tipoLancamentoSelect = container.querySelector('#tipo-lancamento');
+        const estagioLancamentoSelect = container.querySelector('#estagio-lancamento');
+        const titleLancamentoInput = container.querySelector('#title-lancamento');
+        const valorLancamentoInput = container.querySelector('#valor-lancamento');
+        const arquivoLancamentoUrlInput = container.querySelector('#arquivo-lancamento-url');
+        const arquivoLancamentoBtn = container.querySelector('#btn-delete-lancamento');
+        const postIdInput = container.querySelector('[name="post_id"]');
+
+        setDateInputValue(dataLancamentoInput, lancamento.date);
+        setInputValue(tipoLancamentoSelect, lancamento.tipo);
+        setInputValue(estagioLancamentoSelect, lancamento.estagio);
+        setInputValue(titleLancamentoInput, lancamento.title);
+        setInputValue(valorLancamentoInput, lancamento.valor);
+        if (lancamento.comprovante) {
+            setInputValue(arquivoLancamentoUrlInput, lancamento.comprovante);
+        }
+        setInputValue(postIdInput, lancamento.id);
+    }
+
+    function fileInputEvt(e) {
+        const arquivoLancamentoUrlInput = document.querySelector('#arquivo-lancamento-url');
+        setInputValue(arquivoLancamentoUrlInput, e.target.value);
+    }
+
+    function urlInputEvt() {
+        const arquivoLancamentoUrlInput = document.querySelector('#arquivo-lancamento-url');
+        const arquivoLancamentoUrlDiv = document.querySelector('#arquivo-lancamento-url-text');
+        if (arquivoLancamentoUrlInput.value) {
+            const fileUrl = arquivoLancamentoUrlInput.value;
+            arquivoLancamentoUrlDiv.innerHTML = fileUrl;
+            const removeFileBtn = document.createElement('button');
+            removeFileBtn.type = 'button';
+            removeFileBtn.classList.add('remove-file-btn');
+            removeFileBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 7l16 0"></path><path d="M10 11l0 6"></path><path d="M14 11l0 6"></path><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path></svg>`;
+            removeFileBtn.addEventListener('click', removeFileEvt);
+            arquivoLancamentoUrlDiv.append(removeFileBtn);
+        } else {
+            arquivoLancamentoUrlDiv.innerHTML = '';
+        }
+    }
+
+    function removeFileEvt() {
+        const arquivoLancamentoInput = document.querySelector('#arquivo-lancamento');
+        setInputValue(arquivoLancamentoInput);
+
+    }
+
+    function editLancamentoFinanceiroObraForm() {
+        const form = document.querySelector('#form-edit-lancamento-financeiro-obra');
+        const modalAlertPlaceholder = document.getElementById('modal-alert-placeholder');
+        const tableAlertPlaceholder = document.getElementById('table-alert-placeholder');
+        const newLancamentoSuccessMessage = sessionStorage.getItem('showSuccessAlert');
+        if (newLancamentoSuccessMessage) {
+            showAlert(modalAlertPlaceholder, newLancamentoSuccessMessage, 'success');
+            sessionStorage.removeItem('showSuccessAlert');
+        }
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            if (typeof document.getElementById('form-alert') !== undefined && document.getElementById('form-alert')) {
+                const formAlert = bootstrap.Alert.getOrCreateInstance('#form-alert');
+                formAlert.close();
+            }
+
+            if (!form.checkValidity()) {
+                return;
+            }
+
+            form.classList.add('was-validated');
+            const btnSubmit = form.querySelector('#btn-save-lancamento-financeiro');
+
+            if (typeof btnSubmit === undefined || !btnSubmit) {
+                return;
+            }
+
+            if (btnSubmit.disabled) {
+                return;
+            }
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>   <span class="ml-5">Enviando...</span>`;
+            tooglePreloader(true);
+
+            const ajaxUrl = ajax_object.ajax_url;
+            const data = new FormData(form);
+            if ((e.submitter.name === 'delete-post')) {
+                data.append('delete-post', true);
+            } else {
+                data.delete('delete-post');
+            }
+            fetch(ajaxUrl, {
+                method: 'POST',
+                body: data
+            })
+                .then((response) => response.json())
+                .then((response) => {
+                    const status = response.success ? 'success' : 'danger';
+                    let showAlertContainer = modalAlertPlaceholder;
+                    const msg = response.data.msg;
+                    if (status === 'success') {
+                        showAlertContainer = tableAlertPlaceholder;
+                        resetLancamentoFinanceiroInputs();
+                        lancamentosFinanceiros = response.data.lancamentos_financeiros;
+                        filterLancamentos();
+                        const modalLancamentoFinanceiro = document.getElementById('modal-editar-lancamento-financeiro-obra');
+                        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalLancamentoFinanceiro);
+                        modalInstance.hide();
+                    }
+                    showAlert(showAlertContainer, msg, status);
+                })
+                .catch((error) => {
+                    showAlert(modalAlertPlaceholder, error, 'danger');
+                })
+                .finally(() => {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = btnSubmit.dataset.originalText;
+                    form.classList.remove('was-validated');
+                    tooglePreloader(false);
+                });
+
+        });
+    }
+
 
     window.addEventListener('load', () => {
         highlightInit();
@@ -1198,5 +1494,7 @@
         checkPasswordsEvt();
         selectObraContentRedirect();
         financeiroObraTableInit();
+        modalLancamentoFinanceiro();
+        editLancamentoFinanceiroObraForm();
     });
 })();

@@ -27,3 +27,4 @@ require_once 'convert-projeto-to-obra-form-handle.php';
 require_once 'projeto-messages.php';
 require_once 'select-obra-content-form-handle.php';
 require_once 'obras-messages.php';
+require_once 'lancamento-financeiro-ajax.php';
