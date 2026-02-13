@@ -24,9 +24,6 @@
     let totalEstagiosEffort = 0;
     let totalEstagiosCost = 0;
     let totalGeralCost = 0;
-
-    console.log('diariosDeObra', diariosDaObra);
-
     const CACHE_NAME = 'v1-image-cache';
     const TTL_MS = 24 * 60 * 60 * 1000; // 24 horas em milissegundos
 
@@ -1104,6 +1101,8 @@
         });
     }
 
+    // Financeiro
+
     function financeiroObraTableInit() {
         if (!lancamentosFinanceiros) {
             return;
@@ -1115,9 +1114,9 @@
 
     function sortLancamentosFinanceiros(rowsData) {
         rowsData.sort((a, b) => {
-            const dataA = a.data.split('-').reverse().join('-');
-            const dataB = b.data.split('-').reverse().join('-');
-            return new Date(dataB) - new Date(dataA);
+            const dateA = a.date.split('-').reverse().join('-');
+            const dateB = b.date.split('-').reverse().join('-');
+            return new Date(dateB) - new Date(dateA);
         });
     }
 
@@ -1182,38 +1181,42 @@
                 btnModal.dataset.bsTarget = '#modal-editar-lancamento-financeiro-obra';
                 btnModal.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5A6A85" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-pencil"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" /><path d="M13.5 6.5l4 4" /></svg>`;
 
-                const td1 = document.createElement('td');
-                const formattedDateString = row.data.replaceAll('-', '/');
-                td1.append(formattedDateString);
-                tr.append(td1);
+                const formattedDateString = row.date.replaceAll('-', '/');
+                const tdDate = document.createElement('td');
+                tdDate.append(formattedDateString);
+                tr.append(tdDate);
 
-                const td2 = document.createElement('td');
-                td2.innerHTML = `${row.tipo_icon} ${row.tipo}`;
-                tr.append(td2);
+                const tdTipo = document.createElement('td');
+                tdTipo.innerHTML = `${row.tipo_icon} ${row.tipo}`;
+                tr.append(tdTipo);
 
-                const td3 = document.createElement('td');
-                td3.append(row.estagio);
-                tr.append(td3);
+                const tdAuthor = document.createElement('td');
+                tdAuthor.append(row.author);
+                tr.append(tdAuthor);
 
-                const td4 = document.createElement('td');
-                td4.append(row.author);
-                tr.append(td4);
+                const tdEstagio = document.createElement('td');
+                tdEstagio.append(row.estagio);
+                tr.append(tdEstagio);
 
-                const td5 = document.createElement('td');
-                td5.innerHTML = lancamentoTitle;
-                tr.append(td5);
+                const tdTitle = document.createElement('td');
+                tdTitle.innerHTML = lancamentoTitle;
+                tr.append(tdTitle);
 
-                const td6 = document.createElement('td');
-                td6.innerHTML = downloadIcon;
-                tr.append(td6);
+                const tdSku = document.createElement('td');
+                tdSku.append(row.sku);
+                tr.append(tdSku);
 
-                const td7 = document.createElement('td');
-                td7.append(valor);
-                tr.append(td7);
+                const tdIcon = document.createElement('td');
+                tdIcon.innerHTML = downloadIcon;
+                tr.append(tdIcon);
 
-                const td8 = document.createElement('td');
-                td8.append(btnModal);
-                tr.append(td8);
+                const tdValor = document.createElement('td');
+                tdValor.append(valor);
+                tr.append(tdValor);
+
+                const tdModal = document.createElement('td');
+                tdModal.append(btnModal);
+                tr.append(tdModal);
                 rowsArray.push(tr);
             });
         } else {
@@ -1251,6 +1254,8 @@
         const selectedDataEnd = document.querySelector('#data-lancamentos-desc').value;
         const search = document.querySelector('#search-lancamentos').value;
         let results = lancamentosFinanceiros;
+        console.log('results', results);
+
 
         // Filtra estágio
         if (selectedEstagio) {
@@ -1269,8 +1274,8 @@
                 dateStart = `${month1}-${day1}-${year1}`;
                 dateStart = new Date(dateStart);
 
-                let itemDate = item.data;
-                const [day2, month2, year2] = item.data.split('-');
+                let itemDate = item.date;
+                const [day2, month2, year2] = item.date.split('-');
                 itemDate = `${month2}-${day2}-${year2}`;
                 itemDate = new Date(itemDate);
 
@@ -1288,8 +1293,8 @@
                 dateEnd = `${month1}-${day1}-${year1}`;
                 dateEnd = new Date(dateEnd);
 
-                let itemDate = item.data;
-                const [day2, month2, year2] = item.data.split('-');
+                let itemDate = item.date;
+                const [day2, month2, year2] = item.date.split('-');
                 itemDate = `${month2}-${day2}-${year2}`;
                 itemDate = new Date(itemDate);
 
@@ -1307,6 +1312,7 @@
                 const author = item.author.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 const tipo = item.tipo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 const valor = item.valor.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const sku = item.sku.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
                 let filter = true;
                 if (title.includes(searchValue)) {
@@ -1319,6 +1325,9 @@
                     filter = false;
                 }
                 if (valor.includes(searchValue)) {
+                    filter = false;
+                }
+                if (sku.includes(searchValue)) {
                     filter = false;
                 }
                 if (!filter) {
@@ -1335,10 +1344,15 @@
         if (typeof form === undefined || !form) {
             return;
         }
+        const fornecedorLancamentoSelect = form.querySelector('#fornecedor-lancamento');
+        const codigoFaturaLancamentoInput = form.querySelector('#codigo-fatura-lancamento');
+        const skuFaturaLancamentoInput = form.querySelector('#sku-lancamento');
         const dataLancamentoInput = form.querySelector('#data-lancamento');
         const tipoLancamentoSelect = form.querySelector('#tipo-lancamento');
         const estagioLancamentoSelect = form.querySelector('#estagio-lancamento');
         const titleLancamentoInput = form.querySelector('#title-lancamento');
+        const valorUnitarioLancamentoInput = form.querySelector('#valor-unitario-lancamento');
+        const quantidadeLancamentoInput = form.querySelector('#quantidade-lancamento');
         const valorLancamentoInput = form.querySelector('#valor-lancamento');
         const arquivoLancamentoInput = form.querySelector('#arquivo-lancamento');
         const arquivoLancamentoUrlInput = form.querySelector('#arquivo-lancamento-url');
@@ -1350,10 +1364,15 @@
         form.classList.remove('was-validate');
         form.classList.add('not-validate');
 
+        setInputValue(fornecedorLancamentoSelect);
+        setInputValue(codigoFaturaLancamentoInput);
+        setInputValue(skuFaturaLancamentoInput);
         setInputValue(dataLancamentoInput);
         setInputValue(tipoLancamentoSelect);
         setInputValue(estagioLancamentoSelect);
         setInputValue(titleLancamentoInput);
+        setInputValue(valorUnitarioLancamentoInput, '0,00');
+        setInputValue(quantidadeLancamentoInput, 1);
         setInputValue(valorLancamentoInput, '0,00');
         setInputValue(arquivoLancamentoInput);
         setInputValue(arquivoLancamentoUrlInput);
@@ -1391,6 +1410,13 @@
                 btnSubmit.disabled = false;
             }
         });
+        const valorUnitarioLancamentoInput = document.querySelector('#valor-unitario-lancamento');
+        const quantidadeLancamentoInput = document.querySelector('#quantidade-lancamento');
+        valorUnitarioLancamentoInput.addEventListener('input', calcValorTotalLancamento);
+        valorUnitarioLancamentoInput.addEventListener('blur', setDefaultValueOnBlur);
+        quantidadeLancamentoInput.addEventListener('input', calcValorTotalLancamento);
+        quantidadeLancamentoInput.addEventListener('blur', setDefaultValueOnBlur);
+
         const arquivoLancamentoInput = document.querySelector('#arquivo-lancamento');
         const arquivoLancamentoUrlInput = document.querySelector('#arquivo-lancamento-url');
         arquivoLancamentoInput.addEventListener('input', fileInputEvt);
@@ -1412,7 +1438,6 @@
             .then((response) => response.json())
             .then((response) => {
                 const status = response.success ? 'success' : 'danger';
-                // showAlert(alertPlaceholder, response.data.msg, status);
                 if (status === 'success') {
                     setLancamentoFinanceiroData(response.data.lancamento, container);
                 }
@@ -1427,24 +1452,72 @@
     }
 
     function setLancamentoFinanceiroData(lancamento, container) {
+        const fornecedorLancamentoSelect = container.querySelector('#fornecedor-lancamento');
+        const codigoFaturaLancamentoInput = container.querySelector('#codigo-fatura-lancamento');
+        const skuLancamentoInput = container.querySelector('#sku-lancamento');
         const dataLancamentoInput = container.querySelector('#data-lancamento');
         const tipoLancamentoSelect = container.querySelector('#tipo-lancamento');
         const estagioLancamentoSelect = container.querySelector('#estagio-lancamento');
         const titleLancamentoInput = container.querySelector('#title-lancamento');
+        const valorUnitarioLancamentoInput = container.querySelector('#valor-unitario-lancamento');
+        const quantidadeLancamentoInput = container.querySelector('#quantidade-lancamento');
+        const quantidade = lancamento.quantidade ? lancamento.quantidade : 1;
         const valorLancamentoInput = container.querySelector('#valor-lancamento');
         const arquivoLancamentoUrlInput = container.querySelector('#arquivo-lancamento-url');
         const arquivoLancamentoBtn = container.querySelector('#btn-delete-lancamento');
         const postIdInput = container.querySelector('[name="post_id"]');
 
+        setInputValue(fornecedorLancamentoSelect, lancamento.fornecedor_id);
+        setInputValue(codigoFaturaLancamentoInput, lancamento.codigo_fatura);
+        setInputValue(skuLancamentoInput, lancamento.sku);
         setDateInputValue(dataLancamentoInput, lancamento.date);
         setInputValue(tipoLancamentoSelect, lancamento.tipo);
         setInputValue(estagioLancamentoSelect, lancamento.estagio);
         setInputValue(titleLancamentoInput, lancamento.title);
+        setInputValue(valorUnitarioLancamentoInput, lancamento.valor_unitario);
+        setInputValue(quantidadeLancamentoInput, quantidade);
         setInputValue(valorLancamentoInput, lancamento.valor);
         if (lancamento.comprovante) {
             setInputValue(arquivoLancamentoUrlInput, lancamento.comprovante);
         }
         setInputValue(postIdInput, lancamento.id);
+    }
+
+    function calcValorTotalLancamento(e) {
+        const valorUnitarioLancamentoInput = document.querySelector('#valor-unitario-lancamento');
+        const quantidadeLancamentoInput = document.querySelector('#quantidade-lancamento');
+        if (!valorUnitarioLancamentoInput.value) {
+            return;
+        }
+        if (!quantidadeLancamentoInput.value) {
+            return;
+        }
+        const valor = convertStringToNumber(valorUnitarioLancamentoInput.value);
+        let quantidade = 1;
+        quantidade = convertStringToNumber(quantidadeLancamentoInput.value);
+        if (isNaN(valor)) {
+            return;
+        }
+        if (isNaN(quantidade)) {
+            return;
+        }
+        const valorTotalLancamentoInput = document.querySelector('#valor-lancamento');
+        let result = 0;
+        result = quantidade * valor;
+        setInputValue(valorTotalLancamentoInput, result);
+    }
+
+    function setDefaultValueOnBlur(e) {
+        const id = e.target.id;
+        let defaultValue = 0;
+        if (id === 'quantidade-lancamento') {
+            defaultValue = 1;
+        }
+        const currValue = convertStringToNumber(e.target.value);
+        if (!currValue || isNaN(currValue)) {
+            e.target.value = defaultValue;
+            e.target.dispatchEvent(new Event('input', { bubbles: true }));
+        }
     }
 
     function fileInputEvt(e) {
@@ -1475,8 +1548,6 @@
         setInputValue(arquivoLancamentoInput);
 
     }
-
-    // Diário da Obra
 
     function editLancamentoFinanceiroObraForm() {
         const form = document.querySelector('#form-edit-lancamento-financeiro-obra');
@@ -1552,6 +1623,8 @@
 
         });
     }
+
+    // Diário da Obra
 
     function diarioDeObraInit() {
         if (!diariosDaObra) {
@@ -1785,7 +1858,6 @@
         }
         renderDiariosDeObraList(results);
     }
-
 
     window.addEventListener('load', () => {
         highlightInit();

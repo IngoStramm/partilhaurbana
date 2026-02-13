@@ -90,12 +90,13 @@ get_template_part(
                             <tr>
                                 <th><?php _e('Data', 'pu'); ?></th>
                                 <th><?php _e('Tipo', 'pu'); ?></th>
-                                <th><?php _e('Fase', 'pu'); ?></th>
                                 <th><?php _e('Usuário', 'pu'); ?></th>
+                                <th><?php _e('Fase', 'pu'); ?></th>
                                 <th><?php _e('Nome', 'pu'); ?></th>
-                                <th></th>
-                                <th><?php _e('Valor €', 'pu'); ?></th>
-                                <th></th>
+                                <th><?php _e('SKU', 'pu'); ?></th>
+                                <th><?php _e('Download', 'pu'); ?></th>
+                                <th><?php _e('Valor Total €', 'pu'); ?></th>
+                                <th><?php _e('Editar', 'pu'); ?></th>
                             </tr>
                         </thead>
                         <tbody>

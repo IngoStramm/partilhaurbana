@@ -50,7 +50,11 @@ function pu_modal_editar_lancamento_financeiro_obra()
 {
     $obra_id = isset($_GET['obra_id']) && $_GET['obra_id'] ? $_GET['obra_id'] : get_the_ID();
     $estagios_obra = get_post_meta($obra_id, 'estagios_settings', true);
-    // pu_debug(wp_timezone());
+    $fornecedores = get_terms(array(
+        'taxonomy'          => 'fornecedor',
+        'hide_empty'        => false
+    ));
+    // pu_debug($fornecedores);
 ?>
     <div class="modal fade" id="modal-editar-lancamento-financeiro-obra" tabindex="-1" aria-labelledby="modal-editar-lancamento-financeiro-obra" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg modal-extra-padding modal-fullscreen-lg-down">
@@ -74,14 +78,51 @@ function pu_modal_editar_lancamento_financeiro_obra()
                                     <h4><?php _e('Novo lançamento financeiro', 'pu') ?></h4>
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            <div class="row mb-3 gy-3">
+
+                                <div class="col-md-4">
+                                    <div class="form-group flex-shrink-0 flex-grow-1">
+                                        <label for="fornecedor-lancamento" class="form-label mb-3"><?php _e('Fornecedor', 'pu'); ?></label>
+                                        <select name="fornecedor-lancamento" id="fornecedor-lancamento" class="form-select" required>
+                                            <option value=""><?php _e('Selecione uma opção', 'pu'); ?></option>
+                                            <?php if ($fornecedores) {
+                                                $term_outro = null;
+                                                foreach ($fornecedores as $term) {
+                                                    if ($term->slug === 'outro') {
+                                                        $term_outro = $term;
+                                                    } else {
+                                                        echo "<option value='$term->term_id'>$term->name</option>";
+                                                    }
+                                                }
+                                                if ($term_outro) {
+                                                    echo "<option value='$term_outro->term_id'>$term_outro->name</option>";
+                                                }
+                                            } ?>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group flex-shrink-0 flex-grow-1">
+                                        <label for="codigo-fatura-lancamento" class="form-label mb-3"><?php _e('Código da Fatura', 'pu'); ?></label>
+                                        <input id="codigo-fatura-lancamento" name="codigo-fatura-lancamento" type="text" class="form-control" required>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group flex-shrink-0 flex-grow-1">
+                                        <label for="sku-lancamento" class="form-label mb-3"><?php _e('SKU', 'pu'); ?></label>
+                                        <input id="sku-lancamento" name="sku-lancamento" type="text" class="form-control" required>
+                                    </div>
+                                </div>
+
                                 <div class="col-md-4">
                                     <div class="form-group flex-shrink-0 flex-grow-1">
                                         <label for="data-lancamento" class="form-label mb-3"><?php _e('Data lançamento', 'pu'); ?></label>
                                         <input type="date" name="data-lancamento" id="data-lancamento" class="form-control" required>
                                     </div>
-
                                 </div>
+
                                 <div class="col-md-4">
                                     <div class="form-group flex-shrink-0 flex-grow-1">
                                         <label for="tipo-lancamento" class="form-label mb-3"><?php _e('Tipo de lançamento', 'pu'); ?></label>
@@ -104,22 +145,35 @@ function pu_modal_editar_lancamento_financeiro_obra()
                                         </select>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="row mb-4">
-                                <div class="col-md-8">
+
+                                <div class="col-md-12">
                                     <div class="form-group flex-shrink-0 flex-grow-1">
                                         <label for="title-lancamento" class="form-label mb-3"><?php _e('Nome do lançamento', 'pu'); ?></label>
                                         <input id="title-lancamento" name="title-lancamento" type="text" class="form-control" required>
                                     </div>
                                 </div>
+
                                 <div class="col-md-4">
                                     <div class="form-group flex-shrink-0 flex-grow-2">
-                                        <label for="valor-lancamento" class="form-label mb-3"><?php _e('Valor', 'pu'); ?></label>
-                                        <input id="valor-lancamento" name="valor-lancamento" type="text" class="form-control money-input" default="0,00" required>
+                                        <label for="valor-unitario-lancamento" class="form-label mb-3"><?php _e('Valor Unitário', 'pu'); ?></label>
+                                        <input id="valor-unitario-lancamento" name="valor-unitario-lancamento" type="text" class="form-control money-input" default="0,00" required>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="row mb-4">
+
+                                <div class="col-md-4">
+                                    <div class="form-group flex-shrink-0 flex-grow-2">
+                                        <label for="quantidade-lancamento" class="form-label mb-3"><?php _e('Quantidade', 'pu'); ?></label>
+                                        <input id="quantidade-lancamento" name="quantidade-lancamento" type="number" min="1" class="form-control" default="1" required>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group flex-shrink-0 flex-grow-2">
+                                        <label for="valor-lancamento" class="form-label mb-3"><?php _e('Valor Total', 'pu'); ?></label>
+                                        <input id="valor-lancamento" name="valor-lancamento" type="text" class="form-control money-input" default="0,00" readonly required>
+                                    </div>
+                                </div>
+
                                 <div class="col-md-12">
                                     <div class="form-group file-input" id="file-input">
                                         <label for="arquivo-lancamento" class="mb-2 form-label">

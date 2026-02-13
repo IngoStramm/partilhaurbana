@@ -923,44 +923,8 @@ function pu_get_lancamentos_financeiro($obra_id)
     $posts = get_posts($args);
     $lancamentos_financeiros = [];
     foreach ($posts as $post) {
-        $lancamento = new stdClass();
         $post_id = $post->ID;
-        $lancamento->id = $post_id;
-        $lancamento->title = $post->post_title;
-        $lancamento->publish_date = $post->post_date;
-
-        $author_id = $post->post_author;
-        $user_info = get_userdata($author_id);
-        $lancamento->author = $user_info->display_name;;
-
-        $tipo = get_post_meta($post_id, 'tipo', true);
-        $lancamento->tipo = $tipo;
-
-        $valor = get_post_meta($post_id, 'valor', true);
-        $lancamento->valor = $valor;
-
-        $data = get_post_meta($post_id, 'data', true);
-        $lancamento->data = $data;
-
-        $comprovante = get_post_meta($post_id, 'comprovante', true);
-        $lancamento->comprovante = $comprovante;
-
-        $estagio_id = get_post_meta($post_id, 'estagio_lancamento', true);
-        $projeto_id = get_post_meta($post_id, 'projeto_id', true);
-        $estagios_projeto = get_post_meta($projeto_id, 'estagios_settings', true);
-
-        $estagio = isset($estagios_projeto[$estagio_id]['title']) && $tipo === 'saida' ? $estagios_projeto[$estagio_id]['title'] : '';
-        $lancamento->estagio = $estagio;
-
-        $tipo_icon = $tipo === 'saida' ?
-            '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
-  <path d="M9 14.25L4.5 9.75M9 14.25L13.5 9.75M9 14.25L9 3.75" stroke="#FA896B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>' :
-            '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none">
-  <path d="M9 3.75L13.5 8.25M9 3.75L4.5 8.25M9 3.75V14.25" stroke="#52D85F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>';
-        $lancamento->tipo_icon = $tipo_icon;
-
+        $lancamento = pu_get_lancamento_financeiro_by_id($post_id);
         $lancamentos_financeiros[] = $lancamento;
     }
     return $lancamentos_financeiros;
@@ -1001,7 +965,7 @@ function pu_get_datas_lancamento_financeiro_obra_asc()
     $lancamentos = pu_get_lancamentos_financeiro($obra_id);
     $datas = [];
     foreach ($lancamentos as $lancamento) {
-        $datas[] = $lancamento->data;
+        $datas[] = $lancamento->date;
     }
     return pu_sort_date_array($datas);
 }
@@ -1023,7 +987,7 @@ function pu_get_datas_lancamento_financeiro_obra_desc()
     $lancamentos = pu_get_lancamentos_financeiro($obra_id);
     $datas = [];
     foreach ($lancamentos as $lancamento) {
-        $datas[] = $lancamento->data;
+        $datas[] = $lancamento->date;
     }
     return pu_sort_date_array($datas, false);
 }
@@ -1071,20 +1035,39 @@ function pu_get_lancamento_financeiro_by_id($post_id)
 {
     $post = get_post($post_id);
     $lancamento = new stdClass();
+
     if ($post) {
+        $fornecedor = get_the_terms($post_id, 'fornecedor');
+        $fornecedor = $fornecedor ? $fornecedor[0] : null;
+
         $lancamento->id = $post_id;
         $lancamento->title = $post->post_title;
         $lancamento->publish_date = $post->post_date;
 
         $author_id = $post->post_author;
         $user_info = get_userdata($author_id);
-        $lancamento->author = $user_info->display_name;;
+        $lancamento->author = $user_info->display_name;
 
         $tipo = get_post_meta($post_id, 'tipo', true);
         $lancamento->tipo = $tipo;
 
         $valor = get_post_meta($post_id, 'valor', true);
         $lancamento->valor = $valor;
+
+        $valor_unitario = get_post_meta($post_id, 'valor_unitario', true);
+        $lancamento->valor_unitario = $valor_unitario ? $valor_unitario : 0;
+
+        $codigo_fatura = get_post_meta($post_id, 'codigo_fatura', true);
+        $lancamento->codigo_fatura = $codigo_fatura ? $codigo_fatura : '';
+
+        $sku = get_post_meta($post_id, 'sku', true);
+        $lancamento->sku = $sku ? $sku : '';
+
+        $quantidade = get_post_meta($post_id, 'quantidade', true);
+        $lancamento->quantidade = $quantidade ? $quantidade : 1;
+
+        $lancamento->fornecedor = $fornecedor ? $fornecedor->name : '';
+        $lancamento->fornecedor_id = $fornecedor ? $fornecedor->term_id : '';
 
         $date = get_post_meta($post_id, 'data', true);
         $lancamento->date = $date;
@@ -1166,8 +1149,8 @@ function pu_get_diarios_de_obra_by_obra_id($obra_id)
         $user_info = get_userdata($author_id);
         $diario->author = $user_info->display_name;;
 
-        $data = get_post_meta($post_id, 'data', true);
-        $diario->data = $data;
+        $date = get_post_meta($post_id, 'data', true);
+        $diario->date = $date;
 
         $week = get_post_meta($post_id, 'semana', true);
         $diario->week = sprintf(__('Semana %s', 'pu'), $week);

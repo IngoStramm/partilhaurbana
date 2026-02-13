@@ -10,14 +10,15 @@ function pu_register_financeiro_metabox()
     ));
 
     $cmb->add_field(array(
-        'name'                      => esc_html__('Valor', 'pu'),
-        'id'                        => 'valor',
-        'description'               => __('Apenas números', 'pu'),
-        'type'                      => 'text_small',
-        'attributes'        => array(
-            'type'  => 'number',
-            'min'   => 0
-        )
+        'name'                      => esc_html__('Código da Fatura', 'pu'),
+        'id'                        => 'codigo_fatura',
+        'type'                  => 'text_small',
+    ));
+
+    $cmb->add_field(array(
+        'name'                      => esc_html__('SKU', 'pu'),
+        'id'                        => 'sku',
+        'type'                  => 'text_small',
     ));
 
     $cmb->add_field(array(
@@ -65,11 +66,49 @@ function pu_register_financeiro_metabox()
     ));
 
     $cmb->add_field(array(
+        'name'                      => esc_html__('Valor Unitário', 'pu'),
+        'id'                        => 'valor_unitario',
+        'description'               => __('Apenas números', 'pu'),
+        'type'                      => 'text_small',
+        'attributes'        => array(
+            'type'  => 'number',
+            'min'   => 0
+        )
+    ));
+
+    $cmb->add_field(array(
+        'name'                      => esc_html__('Quantidade', 'pu'),
+        'id'                        => 'quantidade',
+        'type'                      => 'text_small',
+        'default'                   => 1,
+        'attributes'        => array(
+            'type'  => 'number',
+            'min'   => 0
+        )
+    ));
+
+    $cmb->add_field(array(
+        'name'                      => esc_html__('Valor Total', 'pu'),
+        'id'                        => 'valor',
+        'description'               => __('Apenas números', 'pu'),
+        'type'                      => 'text_small',
+        'attributes'        => array(
+            'type'  => 'number',
+            'min'   => 0
+        )
+    ));
+
+    $cmb->add_field(array(
         'name' => esc_html__('Comprovante', 'pu'),
         'id'   => 'comprovante',
         'type' => 'file',
     ));
 
+    // Fornecedor: select
+    // Código da Fatura: text
+    // SKU: text
+    // Quantidade: int
+    // Valor Unitário: int
 
 
     //     $cmb->add_field(array(

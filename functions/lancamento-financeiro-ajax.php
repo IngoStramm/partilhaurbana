@@ -39,6 +39,7 @@ function pu_edit_lancamento_financeiro_obra()
 
     $user_id = get_current_user_id();
     $data_lancamento = pu_form_get_field('data-lancamento', __('Data do lançamento financeiro ausente.', 'pu'));
+
     $data = new DateTime($data_lancamento);
     $data_lancamento = $data->format('d-m-Y');
     $tipo_lancamento = pu_form_get_field('tipo-lancamento', __('Data do lançamento financeiro ausente.', 'pu'));
@@ -47,6 +48,17 @@ function pu_edit_lancamento_financeiro_obra()
     $valor_lancamento = pu_form_get_field('valor-lancamento', __('Valor do lançamento financeiro ausente.', 'pu'));
     $valor_lancamento = pu_format_number($valor_lancamento);
     $post_title = pu_form_get_field('title-lancamento', __('Título do lançamento financeiro ausente.', 'pu'));
+
+
+    $fornecedor_lancamento_id = pu_form_get_field('fornecedor-lancamento', __('Fornecedor do lançamento financeiro ausente.', 'pu'));
+    $fornecedor_lancamento_term = get_term_by('term_id', $fornecedor_lancamento_id, 'fornecedor');
+    $codigo_fatura_lancamento = pu_form_get_field('codigo-fatura-lancamento', __('Código da fatura do lançamento financeiro ausente.', 'pu'));
+    $sku_lancamento = pu_form_get_field('sku-lancamento', __('SKU do lançamento financeiro ausente.', 'pu'));
+    $quantidade_lancamento = pu_form_get_field('quantidade-lancamento', __('Quantidade do lançamento financeiro ausente.', 'pu'), 'absint');
+    $valor_unitario_lancamento = pu_form_get_field('valor-unitario-lancamento', __('Valor unitário do lançamento financeiro ausente.', 'pu'));
+    $valor_unitario_lancamento = pu_format_number($valor_unitario_lancamento);
+
+
 
     $obra_id = pu_form_get_field('obra_id', __('ID da obra do lançamento financeiro ausente.', 'pu'), 'absint');
     $post_id = isset($_POST['post_id']) && $_POST['post_id'] ? absint($_POST['post_id']) : null;
@@ -135,6 +147,10 @@ function pu_edit_lancamento_financeiro_obra()
         $meta_input['valor'] = $valor_lancamento;
         $meta_input['data'] = $data_lancamento;
         $meta_input['tipo'] = $tipo_lancamento;
+        $meta_input['codigo_fatura'] = $codigo_fatura_lancamento;
+        $meta_input['sku'] = $sku_lancamento;
+        $meta_input['valor_unitario'] = $valor_unitario_lancamento;
+        $meta_input['quantidade'] = $quantidade_lancamento;
         $args['meta_input'] = $meta_input;
 
         $lancamento_id = wp_insert_post($args, true);
@@ -145,6 +161,14 @@ function pu_edit_lancamento_financeiro_obra()
         if ($new_post && $lancamento_id) {
             $estagio_index = pu_get_estagio_index($lancamento_id, $estagio_lancamento);
             update_post_meta($lancamento_id, 'estagio_lancamento', $estagio_index);
+        }
+
+        // Salva o termo do fornecedor
+        // $fornecedor_lancamento // term_id
+
+        $update_fornecedor_lancamento = wp_set_post_terms($lancamento_id, $fornecedor_lancamento_term->slug, 'fornecedor');
+        if (is_wp_error($update_fornecedor_lancamento) || !$update_fornecedor_lancamento) {
+            wp_send_json_error(array('msg' =>  __('Ocorreu um erro ao salvar o fornecedor do lançamento financeiro.', 'pu')), 200);
         }
 
         // Salva o Arquivo
