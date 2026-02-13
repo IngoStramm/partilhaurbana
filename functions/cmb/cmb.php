@@ -4,4 +4,5 @@ if (!pu_check_if_plugin_is_active('cmb2/init.php')) {
 }
 require_once 'cmb-projetos.php';
 require_once 'cmb-financeiro.php';
+require_once 'cmb-diario-da-obra.php';
 require_once 'settings-cmb/settings-cmb.php';

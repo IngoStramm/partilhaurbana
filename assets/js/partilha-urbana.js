@@ -1,4 +1,4 @@
-(() => {
+(async () => {
     'use strict';
 
     const estagios = ajax_object.estagios;
@@ -10,7 +10,7 @@
     const siteUrl = ajax_object.site_url;
     const currUrl = ajax_object.curr_url;
     let lancamentosFinanceiros = ajax_object.lancamentos_financeiros;
-
+    let diariosDaObra = ajax_object.diarios_da_obra;
     const projecaoInputs = [
         'preco-venda',
         'comissao-impostos',
@@ -24,6 +24,115 @@
     let totalEstagiosEffort = 0;
     let totalEstagiosCost = 0;
     let totalGeralCost = 0;
+
+    console.log('diariosDeObra', diariosDaObra);
+
+    const CACHE_NAME = 'v1-image-cache';
+    const TTL_MS = 24 * 60 * 60 * 1000; // 24 horas em milissegundos
+
+    // Cache de Imagens
+    async function createCachedImage(url) {
+        const cache = await caches.open(CACHE_NAME);
+        let cachedResponse = await cache.match(url);
+
+        if (cachedResponse) {
+            const fetchedDate = cachedResponse.headers.get('sw-fetched-on');
+
+            // Verifica se expirou
+            if (fetchedDate && (Date.now() - new Date(fetchedDate).getTime()) > TTL_MS) {
+                await cache.delete(url);
+                cachedResponse = null; // Força o re-download
+                console.log("Cache expirado, baixando novamente...");
+            }
+        }
+
+        if (!cachedResponse) {
+            const response = await fetch(url);
+            // Clonamos a resposta para adicionar o header de data manualmente
+            const headers = new Headers(response.headers);
+            headers.append('sw-fetched-on', new Date().toISOString());
+
+            const responseToCache = new Response(await response.blob(), {
+                status: response.status,
+                statusText: response.statusText,
+                headers: headers
+            });
+
+            await cache.put(url, responseToCache.clone());
+            cachedResponse = responseToCache;
+        }
+
+        const blob = await cachedResponse.blob();
+        const img = document.createElement('img');
+        img.classList.add('loading');
+        img.src = URL.createObjectURL(blob);
+        return img;
+    }
+
+    // Limpeza em massa de itens expirados (pode ser chamada ao iniciar o app)
+    async function cleanExpiredCache() {
+        const cache = await caches.open(CACHE_NAME);
+        const keys = await cache.keys();
+
+        for (const request of keys) {
+            const response = await cache.match(request);
+            const date = response.headers.get('sw-fetched-on');
+            if (date && (Date.now() - new Date(date).getTime()) > TTL_MS) {
+                await cache.delete(request);
+                console.log(`Item removido por TTL: ${request.url}`);
+            }
+        }
+    }
+
+    async function getAndCacheVideoFrame(videoUrl) {
+        const cache = await caches.open(CACHE_NAME);
+        // Procuramos no cache usando a URL do vídeo como identificador
+        let cachedResponse = await cache.match(videoUrl);
+
+        if (cachedResponse) {
+            const fetchedDate = cachedResponse.headers.get('sw-fetched-on');
+            if (fetchedDate && (Date.now() - new Date(fetchedDate).getTime()) < TTL_MS) {
+                const blob = await cachedResponse.blob();
+                return URL.createObjectURL(blob);
+            }
+        }
+
+        // Se não houver cache válido, gera o frame do vídeo
+        const dataUri = await capturarPrimeiroFrame(videoUrl);
+
+        // Converte Data URI para Blob para salvar no Cache API de forma eficiente
+        const res = await fetch(dataUri);
+        const blob = await res.blob();
+
+        const headers = new Headers();
+        headers.append('sw-fetched-on', new Date().toISOString());
+        headers.append('Content-Type', 'image/jpeg');
+
+        const responseToCache = new Response(blob, { headers });
+        await cache.put(videoUrl, responseToCache);
+
+        return URL.createObjectURL(blob);
+    }
+
+    function capturarPrimeiroFrame(url) {
+        return new Promise((resolve, reject) => {
+            const v = document.createElement('video');
+            v.src = url;
+            v.crossOrigin = "anonymous";
+            v.muted = true;
+            v.preload = "auto";
+
+            v.onloadeddata = () => v.currentTime = 0.5; // Meio segundo para evitar telas pretas
+            v.onseeked = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = v.videoWidth;
+                canvas.height = v.videoHeight;
+                canvas.getContext('2d').drawImage(v, 0, 0);
+                resolve(canvas.toDataURL('image/jpeg', 0.8));
+            };
+            v.onerror = (e) => reject("Erro ao carregar vídeo: " + e);
+        });
+    }
 
     function showAlert(alertPlaceholder, message, type) {
         const wrapper = document.createElement('div');
@@ -981,6 +1090,8 @@
         });
     }
 
+    // Obra
+
     function selectObraContentRedirect() {
         const formSelectObraContent = document.querySelector('#form-select-obra-content');
         if (typeof formSelectObraContent === undefined || !formSelectObraContent) {
@@ -999,7 +1110,6 @@
         }
         renderFinanceiroObraTable(lancamentosFinanceiros);
         renderFinanceiroObraTableTotals(lancamentosFinanceiros);
-        // updatefinanceiroDatesFiltersOptions(lancamentosFinanceiros);
         financeiroObraTableFiltersEvts();
     }
 
@@ -1121,32 +1231,6 @@
         tbody.append(...rowsArray);
     }
 
-    function parseDate(str) {
-        const [day, month, year] = str.split('-').map(Number);
-        // O mês no JS começa em 0 (Janeiro = 0, Fevereiro = 1, etc.)
-        return new Date(year, month - 1, day);
-    }
-
-    function updatefinanceiroDatesFiltersOptions(lancamentosFinanceiros) {
-        const dataLancamentosSelectAsc = document.querySelector('#data-lancamentos-asc');
-        const dataLancamentosSelectDesc = document.querySelector('#data-lancamentos-desc');
-        const datesAscMap = new Map();
-        let datesDesc = [];
-        const uniqueDates = new Set();
-        lancamentosFinanceiros.forEach(item => {
-            datesAscMap.set(item.data, item);
-            datesDesc.push({ date: item.data });
-        });
-        const datesAsc = Array.from(datesAscMap.values());
-        console.log('datesAsc', datesAsc);
-        datesAsc.sort((a, b) => parseDate(a.date) - parseDate(b.date));
-        datesDesc.sort((a, b) => parseDate(b.date) - parseDate(a.date));
-
-
-        console.log('datesDesc', datesDesc);
-
-    }
-
     function financeiroObraTableFiltersEvts() {
         const estagiosLancamentosSelect = document.querySelector('#estagios-lancamentos');
         estagiosLancamentosSelect.addEventListener('input', filterLancamentos);
@@ -1244,7 +1328,6 @@
         }
         renderFinanceiroObraTable(results);
         renderFinanceiroObraTableTotals(results);
-        // updatefinanceiroDatesFiltersOptions(results);
     }
 
     function resetLancamentoFinanceiroInputs() {
@@ -1393,6 +1476,8 @@
 
     }
 
+    // Diário da Obra
+
     function editLancamentoFinanceiroObraForm() {
         const form = document.querySelector('#form-edit-lancamento-financeiro-obra');
         const modalAlertPlaceholder = document.getElementById('modal-alert-placeholder');
@@ -1468,6 +1553,239 @@
         });
     }
 
+    function diarioDeObraInit() {
+        if (!diariosDaObra) {
+            return;
+        }
+        renderDiariosDeObraList(diariosDaObra);
+        diarioDaObraFiltersEvts();
+    }
+
+    function renderDiariosDeObraList(list) {
+        const container = document.querySelector('#list-diario-da-obra');
+        if (typeof container === undefined || !container) {
+            return;
+        }
+        container.innerHTML = '';
+        const itemsArray = [];
+        if (list.length > 0) {
+            list.forEach(item => {
+                const container = document.createElement('div');
+                container.classList.add('projeto-item');
+                container.classList.add('collapsed');
+                container.classList.add('gap-0');
+
+                const projetoItemContent = document.createElement('div');
+                projetoItemContent.classList.add('projeto-item-content');
+                projetoItemContent.innerHTML = `
+                    <div class="projeto-item-info">
+                        <h2 class="projeto-item-title">${item.title}</h2>
+                        <div class="projeto-item-description">${item.description}</div>
+                        <div class="badge text-bg-disabled mt-3 px-4 fw-bold">${item.week}</div>
+                    </div>
+                    <img class="projeto-item-img ms-auto" src="${item.thumbnail_url}" alt="${item.title}">`;
+                container.append(projetoItemContent);
+
+                const actions = document.createElement('div');
+                actions.classList.add('projeto-item-actions');
+
+                const btnToggle = document.createElement('button');
+                btnToggle.type = 'button';
+                btnToggle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="8" viewBox="0 0 14 8" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M7 5.96408L12.8335 -5.60969e-07L14 1.19265L7.58326 7.75305C7.42856 7.91117 7.21876 8 7 8C6.78124 8 6.57144 7.91117 6.41673 7.75305L-2.97559e-07 1.19265L1.16653 -5.09906e-08L7 5.96408Z" fill="#7C8FAC"/></svg>`;
+                btnToggle.classList.add('toggle-diario-content');
+                btnToggle.classList.add('btn-no-style');
+                btnToggle.dataset.postId = item.id;
+                btnToggle.addEventListener('click', toggleDiarioContent);
+                actions.append(btnToggle);
+
+                const btnEdit = document.createElement('button');
+                btnEdit.type = 'button';
+                btnEdit.classList.add('edit-diario');
+                btnEdit.dataset.id = item.id;
+                btnEdit.dataset.bsToggle = 'modal';
+                btnEdit.dataset.bsTarget = '#modal-editar-diario-da-obra';
+                btnEdit.dataset.postId = item.id;
+                btnEdit.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5A6A85" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-pencil"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" /><path d="M13.5 6.5l4 4" /></svg>`;
+                btnEdit.classList.add('btn-no-style');
+                actions.append(btnEdit);
+
+                container.append(actions);
+
+                const filesContainer = document.createElement('ul');
+                filesContainer.classList.add('files-container');
+                filesContainer.classList.add('masonry-files-list');
+                container.append(filesContainer);
+
+                itemsArray.push(container);
+            });
+        } else {
+            const itemDiv = document.createElement('div');
+            itemDiv.classList.add('not-found-container');
+            itemDiv.innerHTML = `<h2 class="not-found-message">Não há nada por aqui.</h2>`;
+            itemsArray.push(itemDiv);
+        }
+        container.append(...itemsArray);
+    }
+
+    async function toggleDiarioContent(e) {
+        e.preventDefault();
+        const postId = e.target.dataset.postId;
+        const container = e.target.closest('.projeto-item');
+        container.classList.toggle('collapsed');
+        const loadPhotos = !container.classList.contains('collapsed');
+        const filesContainer = container.querySelector('.files-container');
+        filesContainer.innerHTML = '';
+        if (loadPhotos) {
+            let diario = diariosDaObra.filter(diario => diario.id === parseInt(postId));
+            const photosUrl = diario[0].photos_url;
+            const videosUrl = diario[0].videos_url;
+            const photosId = diario[0].photos_id;
+            const videosId = diario[0].videos_id;
+            const imgList = [];
+
+            if (photosUrl) {
+                for (const url of photosUrl) {
+                    const listItem = document.createElement('li');
+                    const img = await createCachedImage(url);
+                    listItem.classList.add('list-item');
+                    img.classList.remove('loading');
+                    img.classList.add('file-item');
+                    img.addEventListener('click', imageModal);
+                    listItem.append(img);
+                    imgList.push(listItem);
+                }
+                filesContainer.append(...imgList);
+            }
+            const videosList = [];
+            if (videosUrl) {
+                for (const url of videosUrl) {
+                    const listItem = document.createElement('li');
+                    listItem.classList.add('list-item');
+                    listItem.classList.add('list-item-video');
+
+                    const thumbnailUrl = await getAndCacheVideoFrame(url);
+                    const img = document.createElement('img');
+                    img.src = thumbnailUrl;
+                    img.classList.remove('loading');
+                    img.classList.add('file-item');
+                    img.dataset.videoUrl = url;
+                    img.addEventListener('click', videoModal);
+                    listItem.append(img);
+
+                    const divIcon = document.createElement('div');
+                    divIcon.classList.add('list-item-icon');
+                    divIcon.innerHTML = `<svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M24.5884 48.7423C37.9292 48.7423 48.7433 37.9282 48.7433 24.5875C48.7433 11.2467 37.9292 0.432617 24.5884 0.432617C11.2477 0.432617 0.433594 11.2467 0.433594 24.5875C0.433594 37.9282 11.2477 48.7423 24.5884 48.7423Z" stroke="white" stroke-width="0.865248" stroke-linejoin="round"/><path d="M19.7598 24.5889V16.2217L27.0062 20.4053L34.2527 24.5889L27.0062 28.7725L19.7598 32.9562V24.5889Z" stroke="white" stroke-width="0.865248" stroke-linejoin="round"/></svg>`;
+                    listItem.append(divIcon);
+                    videosList.push(listItem);
+                }
+                filesContainer.append(...videosList);
+            }
+        }
+    }
+
+    function imageModal(e) {
+        e.preventDefault();
+        const image = e.target;
+        const modalDiv = document.createElement('div');
+        modalDiv.classList.add('modal');
+        modalDiv.classList.add('fade');
+        modalDiv.id = 'modal-image';
+        modalDiv.tabIndex = '-1';
+
+        modalDiv.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-xl-down">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="${image.src}" class="expanded-image" />
+                </div>
+            </div>
+        </div>`;
+
+        document.body.appendChild(modalDiv);
+
+        // 4. Inicializar e mostrar usando a API do Bootstrap
+        const modalBootstrap = new bootstrap.Modal(modalDiv);
+        modalBootstrap.show();
+
+        // 5. Remover o elemento do DOM após fechar para não poluir a página
+        modalDiv.addEventListener('hidden.bs.modal', () => {
+            modalDiv.remove();
+        });
+    }
+
+    function videoModal(e) {
+        e.preventDefault();
+        const image = e.target;
+        const videoUrl = image.dataset.videoUrl;
+        const modalDiv = document.createElement('div');
+        modalDiv.classList.add('modal');
+        modalDiv.classList.add('fade');
+        modalDiv.id = 'modal-video';
+        modalDiv.tabIndex = '-1';
+
+        const modalDialog = document.createElement('div');
+        modalDialog.classList.add('modal-dialog');
+        modalDialog.classList.add('modal-dialog-centered');
+        modalDialog.classList.add('modal-xl');
+        modalDialog.classList.add('modal-fullscreen-xl-down');
+        modalDialog.classList.add('modal-video');
+
+        const modalContent = document.createElement('div');
+        modalContent.classList.add('modal-content');
+
+        const modalHeader = document.createElement('div');
+        modalHeader.classList.add('modal-header');
+        modalHeader.innerHTML = `<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>`;
+
+        const modalBody = document.createElement('div');
+        modalBody.classList.add('modal-body');
+
+        const video = document.createElement('video');
+        video.controls = true;
+        video.preload = 'metadata'; // Carrega apenas o necessário para o frame
+        video.src = videoUrl;
+        video.crossOrigin = 'anonymous'; // Evita erros de CORS ao desenhar no canvas
+
+        modalBody.append(video);
+        modalContent.append(modalHeader);
+        modalContent.append(modalBody);
+        modalDialog.append(modalContent);
+        modalDiv.append(modalDialog);
+        document.body.append(modalDiv);
+
+        // 4. Inicializar e mostrar usando a API do Bootstrap
+        const modalBootstrap = new bootstrap.Modal(modalDiv);
+        modalBootstrap.show();
+
+        // 5. Remover o elemento do DOM após fechar para não poluir a página
+        modalDiv.addEventListener('hidden.bs.modal', () => {
+            modalDiv.remove();
+        });
+    }
+
+    function diarioDaObraFiltersEvts() {
+        const estagiosLancamentosSelect = document.querySelector('#estagios-diario-da-obra');
+        estagiosLancamentosSelect.addEventListener('input', filterDiarios);
+    }
+
+    function filterDiarios(e) {
+        const selectedEstagio = document.querySelector('#estagios-diario-da-obra').value;
+        let results = diariosDaObra;
+
+        // Filtra estágio
+        if (selectedEstagio) {
+            results = results.filter(item => {
+                if (item.estagio === selectedEstagio) {
+                    return item;
+                }
+            });
+        }
+        renderDiariosDeObraList(results);
+    }
+
 
     window.addEventListener('load', () => {
         highlightInit();
@@ -1496,5 +1814,7 @@
         financeiroObraTableInit();
         modalLancamentoFinanceiro();
         editLancamentoFinanceiroObraForm();
+        diarioDeObraInit();
+        cleanExpiredCache();
     });
 })();

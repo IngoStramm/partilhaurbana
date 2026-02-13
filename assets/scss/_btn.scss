@@ -13,3 +13,7 @@
     background-color: transparent;
     border: none;
 }
+
+button svg {
+    pointer-events: none;
+}

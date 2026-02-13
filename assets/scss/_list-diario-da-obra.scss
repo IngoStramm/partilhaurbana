@@ -1,0 +1,40 @@
+.list-diario-da-obra {
+    .toggle-diario-content {
+        svg {
+            transform: rotate(-180deg);
+            transition: all 0.2s;
+        }
+    }
+    .projeto-item {
+        .projeto-item-content {
+            .projeto-item-info {
+                flex: 1 1 0;
+            }
+            .projeto-item-img {
+                display: block;
+                width: 210px;
+                height: 140px;
+            }
+        }
+        .files-container {
+            margin-top: 20px;
+            transition: all 0.2s;
+        }
+        .projeto-item-actions {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        &.collapsed {
+            .toggle-diario-content {
+                svg {
+                    transform: rotate(0deg);
+                }
+            }
+            .files-container {
+                margin-top: 0;
+            }
+        }
+    }
+}

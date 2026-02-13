@@ -2,6 +2,13 @@
     .modal-dialog {
         .modal-content {
             border-radius: 20px;
+            video {
+                max-height: calc(90vh - 132px);
+                max-width: 100%;
+                object-fit: contain; /* Ensures the video maintains its aspect ratio */
+                display: block;
+                margin: 0 auto;
+            }
         }
     }
 }

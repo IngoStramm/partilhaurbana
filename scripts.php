@@ -58,20 +58,26 @@ function pu_frontend_scripts()
 
     $projetos_data = pu_get_projeto_data();
     $lancamentos_financeiros = pu_get_lancamentos_financeiros_obra();
+    $diarios_da_obra = pu_get_diarios_da_obra();
 
-    wp_localize_script('partilha-urbana-script', 'ajax_object', array(
-        'ajax_url'              => admin_url('admin-ajax.php'),
-        'plugin_url'            => PU_URL,
-        'estagios'              => $projetos_data->estagios,
-        'projeto_images'        => $projetos_data->images,
-        'projeto_projecao'      => $projetos_data->projecao,
-        'projeto_preco'         => $projetos_data->price,
-        'projeto_observacoes'   => $projetos_data->observacoes,
-        'theme_url'             => PU_URL,
-        'site_url'             => get_site_url(),
-        'curr_url'              => get_permalink(),
-        'lancamentos_financeiros'   => $lancamentos_financeiros
-    ));
+    wp_localize_script(
+        'partilha-urbana-script',
+        'ajax_object',
+        array(
+            'ajax_url'                          => admin_url('admin-ajax.php'),
+            'plugin_url'                        => PU_URL,
+            'estagios'                          => $projetos_data->estagios,
+            'projeto_images'                    => $projetos_data->images,
+            'projeto_projecao'                  => $projetos_data->projecao,
+            'projeto_preco'                     => $projetos_data->price,
+            'projeto_observacoes'               => $projetos_data->observacoes,
+            'theme_url'                         => PU_URL,
+            'site_url'                          => get_site_url(),
+            'curr_url'                          => get_permalink(),
+            'lancamentos_financeiros'           => $lancamentos_financeiros,
+            'diarios_da_obra'                   => $diarios_da_obra
+        )
+    );
 
 
     wp_enqueue_style('theme-style', PU_URL . '/assets/css/styles.css', array(), $version, 'all');

@@ -4,8 +4,9 @@ add_action('init', 'mi_imovel_post_type', 1);
 
 function mi_imovel_post_type()
 {
+    $post_types = pu_obra_posts_types();
     $portfolio = new PU_Post_Type(
-        'Projeto', // Nome (Singular) do Post Type.
+        $post_types['projetos'], // Nome (Singular) do Post Type.
         'projetos' // Slug do Post Type.;
     );
 
@@ -30,8 +31,8 @@ function mi_imovel_post_type()
 
     $portfolio->set_arguments(
         array(
-            'supports'             => array('title', 'thumbnail', 'revisions'),
-            'menu_icon'         => 'dashicons-open-folder',
+            'supports'             => array('title', 'thumbnail'),
+            'menu_icon'         => 'dashicons-book-alt',
             'show_in_nav_menus' => true
         )
     );

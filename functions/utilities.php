@@ -897,6 +897,7 @@ function pu_generate_unique_username($username)
 function pu_obra_posts_types()
 {
     $post_types = array(
+        'projetos' => __('Projeto', 'pu'),
         'financeiro' => __('Financeiro', 'pu'),
         'diario-da-obra' => __('Diário da Obra', 'pu'),
     );
@@ -1131,14 +1132,95 @@ function pu_get_estagio_index($post_id, $title)
 }
 
 
-// function pu_return_estagios_options()
-// {
-//     $post_id = get_the_ID();
-//     $estagios = [];
-//     $estagios_settings = get_post_meta($post_id, 'estagios_settings', true);
-//     pu_debug($estagios_settings);
-//     foreach ($estagios_settings as $key => $estagio) {
-//         $estagios[$key] = $estagio['title'];
-//     }
-//     return $estagios;
-// }
+/**
+ * pu_get_diarios_de_obra_by_obra_id
+ *
+ * @param  int $obra_id
+ * @return array
+ */
+function pu_get_diarios_de_obra_by_obra_id($obra_id)
+{
+    $args = array(
+        'post_type' => 'diario-da-obra',
+        'nopaging' => true,
+        'meta_query' => array(
+            array(
+                'key' => 'projeto_id',
+                'value' => $obra_id,
+            )
+        ),
+    );
+    $posts = get_posts($args);
+    $diarios_de_obra = [];
+    foreach ($posts as $post) {
+        $diario = new stdClass();
+        $post_id = $post->ID;
+        $diario->id = $post_id;
+        $diario->title = $post->post_title;
+        $diario->publish_date = $post->post_date;
+
+        $post_thumbnail_url = get_the_post_thumbnail_url($post);
+        $diario->thumbnail_url = $post_thumbnail_url;
+
+        $author_id = $post->post_author;
+        $user_info = get_userdata($author_id);
+        $diario->author = $user_info->display_name;;
+
+        $data = get_post_meta($post_id, 'data', true);
+        $diario->data = $data;
+
+        $week = get_post_meta($post_id, 'semana', true);
+        $diario->week = sprintf(__('Semana %s', 'pu'), $week);
+
+        $description = get_post_meta($post_id, 'description', true);
+        $diario->description = $description;
+
+        $photos_meta = get_post_meta($post_id, 'photos', true);
+        $photos_url = [];
+        $photos_id = [];
+        foreach ($photos_meta as $id => $url) {
+            $photos_url[] = $url;
+            $photos_id[] = $id;
+        }
+        $diario->photos_url = $photos_url;
+        $diario->photos_id = $photos_id;
+
+        $videos_meta = get_post_meta($post_id, 'videos', true);
+        $videos_url = [];
+        $videos_id = [];
+        foreach ($videos_meta as $id => $url) {
+            $videos_url[] = $url;
+            $videos_id[] = $id;
+        }
+        $diario->videos_url = $videos_url;
+        $diario->videos_id = $videos_id;
+
+        $estagio_id = get_post_meta($post_id, 'estagio_lancamento', true);
+        $projeto_id = get_post_meta($post_id, 'projeto_id', true);
+        $estagios_projeto = get_post_meta($projeto_id, 'estagios_settings', true);
+
+        $estagio = isset($estagios_projeto[$estagio_id]['title']) ? $estagios_projeto[$estagio_id]['title'] : '';
+        $diario->estagio = $estagio;
+
+        $diarios_de_obra[] = $diario;
+    }
+    return $diarios_de_obra;
+}
+
+/**
+ * pu_get_diarios_de_obra
+ *
+ * @return array
+ */
+function pu_get_diarios_da_obra()
+{
+    if (!is_post_type_archive('diario-da-obra')) {
+        return;
+    }
+    $obra_id = isset($_GET['obra_id']) && $_GET['obra_id'] ? $_GET['obra_id'] : null;
+    if (!$obra_id) {
+        return;
+    }
+    $diarios_de_obra = pu_get_diarios_de_obra_by_obra_id($obra_id);
+    return $diarios_de_obra;
+}

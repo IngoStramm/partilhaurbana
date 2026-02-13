@@ -32,9 +32,12 @@ get_template_part(
     'section',
     array('post_id' => $obra_id)
 );
-
-get_template_part('template-parts/general/select-obra', 'content', array('post_id' => $obra_id));
 ?>
+<div class="row">
+    <div class="col-md-12">
+        <?php get_template_part('template-parts/general/select-obra', 'content', array('post_id' => $obra_id)); ?>
+    </div>
+</div>
 <div class="row mt-3">
     <div class="col-md-12 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 flex-wrap flex-md-nowrap">
         <select class="form-select" name="estagios-lancamentos" id="estagios-lancamentos">

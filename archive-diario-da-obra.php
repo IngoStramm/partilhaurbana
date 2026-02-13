@@ -1,0 +1,68 @@
+<?php
+
+/**
+ * The main template file.
+ *
+ * The template for displaying diário-da-obra archive pages
+ *
+ * @package partilha-urbana
+ */
+
+get_header(); ?>
+
+<?php
+$obra_id = isset($_GET['obra_id']) && $_GET['obra_id'] ? $_GET['obra_id'] : get_the_ID();
+$help_section_title = __('Obras', 'pu');
+$help_section_text = __('Acompanhamento completo da obra e transparência com cliente.', 'pu');
+$help_section_url = '#';
+$estagios_obra = get_post_meta($obra_id, 'estagios_settings', true);
+get_template_part(
+    'template-parts/general/help',
+    'section',
+    array(
+        'title' => $help_section_title,
+        'text' => $help_section_text,
+        'url' => $help_section_url
+    )
+);
+get_template_part(
+    'template-parts/single/obras-header',
+    'section',
+    array('post_id' => $obra_id)
+);
+?>
+
+<div class="row">
+    <div class="col-md-12">
+        <?php get_template_part('template-parts/general/select-obra', 'content', array('post_id' => $obra_id)); ?>
+    </div>
+</div>
+<div class="row mt-3">
+    <div class="col-md-12 d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 flex-wrap flex-md-nowrap">
+        <select class="form-select" name="estagios-diario-da-obra" id="estagios-diario-da-obra">
+            <option value=""><?php _e('Todas as fases da obra', 'pu'); ?></option>
+            <?php foreach ($estagios_obra as $estagio) {
+                $title = $estagio['title'];
+                echo "<option>$title</option>";
+            } ?>
+        </select>
+        <a
+            href="#"
+            class="btn btn-secondary btn-with-icon flex-shrink-0"
+            data-bs-toggle="modal"
+            data-bs-target="#modal-editar-diario-da-obra-financeiro-obra">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M18 12.998H13V17.998C13 18.2633 12.8946 18.5176 12.7071 18.7052C12.5196 18.8927 12.2652 18.998 12 18.998C11.7348 18.998 11.4804 18.8927 11.2929 18.7052C11.1054 18.5176 11 18.2633 11 17.998V12.998H6C5.73478 12.998 5.48043 12.8927 5.29289 12.7052C5.10536 12.5176 5 12.2633 5 11.998C5 11.7328 5.10536 11.4785 5.29289 11.2909C5.48043 11.1034 5.73478 10.998 6 10.998H11V5.99805C11 5.73283 11.1054 5.47848 11.2929 5.29094C11.4804 5.1034 11.7348 4.99805 12 4.99805C12.2652 4.99805 12.5196 5.1034 12.7071 5.29094C12.8946 5.47848 13 5.73283 13 5.99805V10.998H18C18.2652 10.998 18.5196 11.1034 18.7071 11.2909C18.8946 11.4785 19 11.7328 19 11.998C19 12.2633 18.8946 12.5176 18.7071 12.7052C18.5196 12.8927 18.2652 12.998 18 12.998Z" fill="white" />
+            </svg>
+            <?php _e('Adicionar', 'pu'); ?>
+        </a>
+    </div>
+</div>
+<div class="row mt-4 gap-4">
+    <div class="col-md-12">
+        <div id="table-alert-placeholder"></div>
+        <div id="list-diario-da-obra" class="list-diario-da-obra d-flex flex-column gap-4"></div>
+    </div>
+</div>
+<?php
+get_footer();

@@ -8,6 +8,8 @@
   --orange: #f8a049;
   --light-pink: #ffa9a9;
   --input-bd-color: #dfe5ef;
+  --black-50: #00000075;
+  --white-0: #ffffff00;
 }
 
 .admin-bar .topbar {
@@ -83,6 +85,10 @@
 .btn-no-style {
   background-color: transparent;
   border: none;
+}
+
+button svg {
+  pointer-events: none;
 }
 
 .help-header {
@@ -439,6 +445,11 @@ textarea.form-control {
   color: var(--bs-white) !important;
 }
 
+.text-bg-disabled {
+  background-color: var(--almost-white);
+  color: var(--medium-blue);
+}
+
 .alert {
   padding: 20px 30px;
 }
@@ -519,6 +530,13 @@ ul.list-with-dots li:last-child {
 
 .modal .modal-dialog .modal-content {
   border-radius: 20px;
+}
+.modal .modal-dialog .modal-content video {
+  max-height: calc(90vh - 132px);
+  max-width: 100%;
+  object-fit: contain; /* Ensures the video maintains its aspect ratio */
+  display: block;
+  margin: 0 auto;
 }
 
 @media (min-width: 768px) {
@@ -632,5 +650,93 @@ ul.list-with-dots li:last-child {
 }
 .arquivo-lancamento-url-text .remove-file-btn svg {
   stroke: var(--bs-white);
+}
+
+.list-diario-da-obra .toggle-diario-content svg {
+  transform: rotate(-180deg);
+  transition: all 0.2s;
+}
+.list-diario-da-obra .projeto-item .projeto-item-content .projeto-item-info {
+  flex: 1 1 0;
+}
+.list-diario-da-obra .projeto-item .projeto-item-content .projeto-item-img {
+  display: block;
+  width: 210px;
+  height: 140px;
+}
+.list-diario-da-obra .projeto-item .files-container {
+  margin-top: 20px;
+  transition: all 0.2s;
+}
+.list-diario-da-obra .projeto-item .projeto-item-actions {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.list-diario-da-obra .projeto-item.collapsed .toggle-diario-content svg {
+  transform: rotate(0deg);
+}
+.list-diario-da-obra .projeto-item.collapsed .files-container {
+  margin-top: 0;
+}
+
+.masonry-files-list {
+  columns: 250px auto;
+  column-gap: 1em; /* Adjusts the gap between columns */
+  margin: 0;
+  padding: 0;
+}
+.masonry-files-list .list-item {
+  position: relative;
+  /* Prevents items from breaking across columns */
+  break-inside: avoid;
+  /* Ensures images take the full width of their column */
+  width: 100%;
+  /* Adds space between items vertically */
+  margin-bottom: 1em;
+  background-color: var(--light-blue);
+}
+.masonry-files-list .list-item .list-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-color: var(--black-50);
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+.masonry-files-list .list-item .list-item-icon svg {
+  pointer-events: none;
+}
+.masonry-files-list .list-item .file-item {
+  /* Ensures images are responsive and maintain aspect ratio */
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+  opacity: 1;
+  transition: all 0.2s;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.masonry-files-list .list-item .file-item.loading {
+  opacity: 0.5;
+}
+.masonry-files-list .list-item:hover .list-item-icon {
+  background-color: var(--white-0);
+}
+
+.expanded-image {
+  display: block;
+  margin: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 /*# sourceMappingURL=partilha-urbana.css.map */

@@ -1,6 +1,7 @@
 <?php
 $post_id = $args['post_id'];
 $post_types = pu_obra_posts_types();
+unset($post_types['projetos']);
 $queried_object = get_queried_object();
 $archive_slug = null;
 if (isset($queried_object->rewrite['slug'])) {
