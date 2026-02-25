@@ -1114,6 +1114,75 @@ function pu_get_estagio_index($post_id, $title)
     return $estagio_index;
 }
 
+/**
+ * pu_get_diario_da_obra_by_id
+ *
+ * @param  int $post_id
+ * @return object
+ */
+function pu_get_diario_da_obra_by_id($post_id)
+{
+    $post = get_post($post_id);
+    $diario = new stdClass();
+    $post_id = $post->ID;
+    $diario->id = $post_id;
+    $diario->title = $post->post_title;
+    $diario->publish_date = $post->post_date;
+
+    $post_thumbnail_url = get_the_post_thumbnail_url($post);
+    $diario->thumbnail_url = $post_thumbnail_url;
+
+    $author_id = $post->post_author;
+    $user_info = get_userdata($author_id);
+    $diario->author = $user_info->display_name;;
+
+    $date = get_post_meta($post_id, 'data', true);
+    $diario->date = $date;
+
+    $week = get_post_meta($post_id, 'semana', true);
+    $diario->week = sprintf(__('Semana %s', 'pu'), $week);
+    $diario->week_number = $week;
+
+    $description = get_post_meta($post_id, 'description', true);
+    $diario->description = $description;
+
+    $photos_meta = get_post_meta($post_id, 'photos', true);
+    if (!$photos_meta) {
+        $photos_meta = [];
+    }
+    $photos_url = [];
+    $photos_id = [];
+    foreach ($photos_meta as $id => $url) {
+        $photos_url[] = $url;
+        $photos_id[] = $id;
+    }
+    $diario->photos_meta = $photos_meta;
+    $diario->photos_url = $photos_url;
+    $diario->photos_id = $photos_id;
+
+    $videos_meta = get_post_meta($post_id, 'videos', true);
+    if (!$videos_meta) {
+        $videos_meta = [];
+    }
+    $videos_url = [];
+    $videos_id = [];
+    foreach ($videos_meta as $id => $url) {
+        $videos_url[] = $url;
+        $videos_id[] = $id;
+    }
+    $diario->videos_meta = $videos_meta;
+    $diario->videos_url = $videos_url;
+    $diario->videos_id = $videos_id;
+
+    $estagio_id = get_post_meta($post_id, 'estagio_diario', true);
+    $projeto_id = get_post_meta($post_id, 'projeto_id', true);
+    $estagios_projeto = get_post_meta($projeto_id, 'estagios_settings', true);
+
+    $estagio = isset($estagios_projeto[$estagio_id]['title']) ? $estagios_projeto[$estagio_id]['title'] : '';
+    $diario->estagio = $estagio;
+    return $diario;
+}
+
 
 /**
  * pu_get_diarios_de_obra_by_obra_id
@@ -1136,55 +1205,7 @@ function pu_get_diarios_de_obra_by_obra_id($obra_id)
     $posts = get_posts($args);
     $diarios_de_obra = [];
     foreach ($posts as $post) {
-        $diario = new stdClass();
-        $post_id = $post->ID;
-        $diario->id = $post_id;
-        $diario->title = $post->post_title;
-        $diario->publish_date = $post->post_date;
-
-        $post_thumbnail_url = get_the_post_thumbnail_url($post);
-        $diario->thumbnail_url = $post_thumbnail_url;
-
-        $author_id = $post->post_author;
-        $user_info = get_userdata($author_id);
-        $diario->author = $user_info->display_name;;
-
-        $date = get_post_meta($post_id, 'data', true);
-        $diario->date = $date;
-
-        $week = get_post_meta($post_id, 'semana', true);
-        $diario->week = sprintf(__('Semana %s', 'pu'), $week);
-
-        $description = get_post_meta($post_id, 'description', true);
-        $diario->description = $description;
-
-        $photos_meta = get_post_meta($post_id, 'photos', true);
-        $photos_url = [];
-        $photos_id = [];
-        foreach ($photos_meta as $id => $url) {
-            $photos_url[] = $url;
-            $photos_id[] = $id;
-        }
-        $diario->photos_url = $photos_url;
-        $diario->photos_id = $photos_id;
-
-        $videos_meta = get_post_meta($post_id, 'videos', true);
-        $videos_url = [];
-        $videos_id = [];
-        foreach ($videos_meta as $id => $url) {
-            $videos_url[] = $url;
-            $videos_id[] = $id;
-        }
-        $diario->videos_url = $videos_url;
-        $diario->videos_id = $videos_id;
-
-        $estagio_id = get_post_meta($post_id, 'estagio_lancamento', true);
-        $projeto_id = get_post_meta($post_id, 'projeto_id', true);
-        $estagios_projeto = get_post_meta($projeto_id, 'estagios_settings', true);
-
-        $estagio = isset($estagios_projeto[$estagio_id]['title']) ? $estagios_projeto[$estagio_id]['title'] : '';
-        $diario->estagio = $estagio;
-
+        $diario = pu_get_diario_da_obra_by_id($post->ID);
         $diarios_de_obra[] = $diario;
     }
     return $diarios_de_obra;
@@ -1206,4 +1227,173 @@ function pu_get_diarios_da_obra()
     }
     $diarios_de_obra = pu_get_diarios_de_obra_by_obra_id($obra_id);
     return $diarios_de_obra;
+}
+
+
+/**
+ * pu_get_translated_month
+ *
+ * @param  int $m
+ * @return string
+ */
+function pu_get_translated_month($m)
+{
+    switch ($m) {
+        case '02':
+            $month = __('Fevereiro', 'pu');
+            # code...
+            break;
+
+        case '03':
+            $month = __('Março', 'pu');
+            # code...
+            break;
+
+        case '04':
+            $month = __('Abril', 'pu');
+            # code...
+            break;
+
+        case '05':
+            $month = __('Maio', 'pu');
+            # code...
+            break;
+
+        case '06':
+            $month = __('Junho', 'pu');
+            # code...
+            break;
+
+        case '07':
+            $month = __('Julho', 'pu');
+            # code...
+            break;
+
+        case '08':
+            $month = __('Agosto', 'pu');
+            # code...
+            break;
+
+        case '09':
+            $month = __('Setembro', 'pu');
+            # code...
+            break;
+
+        case '10':
+            $month = __('Outubro', 'pu');
+            # code...
+            break;
+
+        case '11':
+            $month = __('Novembro', 'pu');
+            # code...
+            break;
+
+        case '12':
+            $month = __('Dezembro', 'pu');
+            # code...
+            break;
+
+        default:
+            $month = __('Janeiro', 'pu');
+            # code...
+            break;
+    }
+    return $month;
+}
+
+function pu_check_file_size($file, $limit)
+{
+    $status = true;
+    $size = $file['size'];
+    if (($file['error'] === UPLOAD_ERR_INI_SIZE || $file['error'] === UPLOAD_ERR_FORM_SIZE)
+        ||
+        ($size > $limit)
+    ) {
+        $status = false;
+    }
+    return $status;
+}
+
+/**
+ * pu_format_number_in_MB
+ *
+ * @param  string $string
+ * @return string
+ */
+function pu_format_bytes($bytes, $precision = 2)
+{
+    $bytes = floatval($bytes);
+    if (!is_finite($bytes) || $bytes < 0) {
+        return '0 B';
+    }
+
+    // Units in powers of 1024 (binary prefixes)
+    $units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+    // Calculate the appropriate unit index
+    $unitIndex = floor(log($bytes, 1024));
+
+    // Ensure the index doesn't exceed the array bounds
+    $unitIndex = min($unitIndex, count($units) - 1);
+
+    // Calculate the value in the chosen unit and format the output
+    $value = $bytes / pow(1024, $unitIndex);
+
+    // Use rtrim to remove trailing zeros and the decimal point if necessary
+    $formattedValue = rtrim(rtrim(number_format($value, $precision, '.', ''), '0'), '.');
+
+    return $formattedValue . ' ' . $units[$unitIndex];
+}
+
+function pu_check_files_size($files, $multiples = true, $type = 'image')
+{
+    $return_obj = new stdClass();
+    $single_file_key = $type === 'image' ? 'pu_single_image_max_upload' : 'pu_single_video_max_upload';
+    $single_file_max_upload = pu_get_option($single_file_key, false, 'pu_site_files_options');
+
+    $files_max_upload = pu_get_option('pu_files_max_upload', false, 'pu_site_files_options');
+
+    $status = 'success';
+    $msg = '';
+
+
+    if ($multiples) {
+        $total_files_size = array_sum($files['size']);
+        if ($total_files_size > $files_max_upload) {
+            $status = 'false';
+            $msg = sprintf(
+                __('O limite total de upload de arquivos é de %s (foram enviados um total de %s).', 'pu'),
+                pu_format_bytes($files_max_upload),
+                pu_format_bytes($total_files_size)
+            );
+        } else {
+            foreach ($files as $file) {
+                $check = pu_check_file_size($file, $single_file_max_upload);
+                if (!$check) {
+                    $msg = sprintf(
+                        __('O limite de upload de cada arquivo é de %s (o arquivo "%s" possui %s).', 'pu'),
+                        pu_format_bytes($single_file_max_upload),
+                        $file['name'],
+                        pu_format_bytes($files['size'])
+                    );
+                }
+            }
+        }
+    } else {
+        $check = pu_check_file_size($files, $single_file_max_upload);
+        if (!$check) {
+            $status = 'false';
+            $msg = sprintf(
+                __('O limite de upload de cada arquivo é de %s (o arquivo "%s" possui %s).', 'pu'),
+                pu_format_bytes($single_file_max_upload),
+                $files['name'],
+                pu_format_bytes($files['size'])
+            );
+        }
+    }
+    $return_obj->status = $status;
+    $return_obj->msg = $msg;
+
+    return $return_obj;
 }

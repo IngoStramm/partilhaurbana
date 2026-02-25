@@ -1,11 +1,13 @@
-.arquivo-lancamento-url-text {
+.arquivo-lancamento-url-text,
+.files-list-item {
     margin-top: 10px;
     display: flex;
     align-items: center;
     justify-content: flex-start;
     gap: 10px;
-    font-size: .8rem;
-    .remove-file-btn {
+    font-size: 0.8rem;
+    .remove-file-btn,
+    .btn-remove-file {
         display: flex;
         flex-shrink: 0;
         justify-content: center;

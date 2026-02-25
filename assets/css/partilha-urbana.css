@@ -381,6 +381,7 @@ textarea.form-control {
 
 .file-image-preview .images-preview {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-start;
   align-items: flex-start;
   gap: 10px;
@@ -392,11 +393,11 @@ textarea.form-control {
   position: relative;
 }
 .file-image-preview .images-preview .images-preview-item .btn-clear-image {
+  display: flex;
   position: absolute;
   top: 4px;
   right: 4px;
   z-index: 1;
-  display: none;
   justify-content: center;
   align-items: center;
   padding: 0;
@@ -412,7 +413,7 @@ textarea.form-control {
   stroke: var(--bs-white);
 }
 .file-image-preview .images-preview .images-preview-item .image-preview {
-  display: none;
+  display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
@@ -626,7 +627,8 @@ ul.list-with-dots li:last-child {
   outline: none;
 }
 
-.arquivo-lancamento-url-text {
+.arquivo-lancamento-url-text,
+.files-list-item {
   margin-top: 10px;
   display: flex;
   align-items: center;
@@ -634,7 +636,10 @@ ul.list-with-dots li:last-child {
   gap: 10px;
   font-size: 0.8rem;
 }
-.arquivo-lancamento-url-text .remove-file-btn {
+.arquivo-lancamento-url-text .remove-file-btn,
+.arquivo-lancamento-url-text .btn-remove-file,
+.files-list-item .remove-file-btn,
+.files-list-item .btn-remove-file {
   display: flex;
   flex-shrink: 0;
   justify-content: center;
@@ -648,7 +653,10 @@ ul.list-with-dots li:last-child {
   line-height: 30px;
   text-align: center;
 }
-.arquivo-lancamento-url-text .remove-file-btn svg {
+.arquivo-lancamento-url-text .remove-file-btn svg,
+.arquivo-lancamento-url-text .btn-remove-file svg,
+.files-list-item .remove-file-btn svg,
+.files-list-item .btn-remove-file svg {
   stroke: var(--bs-white);
 }
 

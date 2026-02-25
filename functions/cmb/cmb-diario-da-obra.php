@@ -39,7 +39,7 @@ function pu_register_diario_da_obra_metabox()
 
     $cmb->add_field(array(
         'name'       => esc_html__('Fase (estágio)', 'pu'),
-        'id'         => 'estagio_lancamento',
+        'id'         => 'estagio_diario',
         'type'       => 'select',
         'show_option_none' => true,
         'options_cb'       => function ($cmb) {

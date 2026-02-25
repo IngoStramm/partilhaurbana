@@ -46,15 +46,7 @@ $estagios = $new_projeto ? [] : get_post_meta($post_id, 'estagios_settings', tru
                         </div>
                     </div>
                     <div class="col-md-6 mb-4">
-                        <div class="form-group file-image-preview" id="file-image-preview">
-                            <div class="mb-2 form-label"><?php _e('Imagem do projeto', 'pu'); ?></div>
-                            <ul id="images-preview" class="images-preview">
-                            </ul>
-                            <div class="image-inputs">
-                                <input class="form-control" type="file" id="featured-image" name="featured-image" aria-label="<?php _e('Imagem do projeto', 'pu'); ?>" />
-                                <input type="hidden" id="delete-featured-image" name="delete-featured-image">
-                            </div>
-                            <input type="hidden" class="changed-thumbnail">
+                        <div class="form-group" id="projeto-featured-image-preview-container">
                         </div>
                     </div>
                 </div>

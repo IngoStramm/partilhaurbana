@@ -39,7 +39,6 @@
             if (fetchedDate && (Date.now() - new Date(fetchedDate).getTime()) > TTL_MS) {
                 await cache.delete(url);
                 cachedResponse = null; // Força o re-download
-                console.log("Cache expirado, baixando novamente...");
             }
         }
 
@@ -76,7 +75,6 @@
             const date = response.headers.get('sw-fetched-on');
             if (date && (Date.now() - new Date(date).getTime()) > TTL_MS) {
                 await cache.delete(request);
-                console.log(`Item removido por TTL: ${request.url}`);
             }
         }
     }
@@ -294,6 +292,310 @@
         });
     }
 
+    // Campos de imagens com miniaturas
+    /**
+     * renderInputFiles
+     * @param  string containerId
+     * @param  string labelText
+     * @param  int inputId
+     * @param  array urls
+     * @param  boolean multiple
+     * @param  string fileType
+     * @param  array files
+     *
+     */
+    function renderInputFiles(
+        containerId,
+        labelText,
+        inputId,
+        urls = [],
+        multiple = false,
+        files = [],
+        fileType = 'image'
+    ) {
+        const container = document.querySelector(`#${containerId}`);
+        if (typeof container === undefined || !container) {
+            return;
+        }
+
+        // verifica se existe alguma imagem nova que ainda não foi salva
+        let notUploadedImage = false;
+        urls.forEach(url => {
+            if (url.startsWith('blob:')) {
+                notUploadedImage = true;
+            }
+        });
+        container.innerHTML = '';
+        container.classList.add('form-group');
+        container.classList.add('file-image-preview');
+
+        // Armazena todos novos elementos em um array 
+        // para adicionar ao DOM apenas uma vez
+        const outputArr = [];
+
+        // Label
+        const formLabel = document.createElement('div');
+        formLabel.classList.add('form-label');
+        formLabel.classList.add('mb-2');
+        formLabel.textContent = labelText;
+        outputArr.push(formLabel);
+
+        // Se houver imagens novas não salvas
+        // não permite o upload de mais imagens
+        if (notUploadedImage && multiple) {
+            const p = document.createElement('p');
+            p.textContent = 'É necessário salvar os novos arquivos para poder adicionar mais arquivos.';
+            outputArr.push(p);
+        }
+        const inputsDiv = document.createElement('div');
+        inputsDiv.classList.add('image-inputs');
+
+        // Se todas as imagens já tiverem sido salvas
+        // permite o upload de mais imagens
+        if (!notUploadedImage) {
+            // cria um input file "temporário"
+            // este input é removido do DOM sempre que uma nova imagem é adicionada
+            // ele só existe para o usuário poder adiconar as imagens através deste input
+            const tempInputFile = document.createElement('input');
+            tempInputFile.type = 'file';
+            tempInputFile.id = `${inputId}-temp`;
+            // tempInputFile.name = multiple ? `${inputId}-temp[]` : `${inputId}-temp`; // como este input é temporário, não precisa de um name
+            tempInputFile.multiple = multiple;
+            tempInputFile.classList.add('form-control');
+            tempInputFile.classList.add('mb-3');
+            if (fileType === 'image') {
+                tempInputFile.accept = 'image/png, image/jpeg, image/gif';
+            } else if (fileType === 'video') {
+                tempInputFile.accept = 'video/mp4,video/webm,.avi';
+            }
+            tempInputFile.addEventListener('input', e => {
+                addFile(e, containerId, labelText, inputId, urls, multiple, fileType);
+            });
+            inputsDiv.append(tempInputFile);
+            outputArr.push(inputsDiv);
+        }
+
+        if (fileType === 'image') {
+            // Cria as miniaturas das imagens
+            const thumbList = document.createElement('ul');
+            thumbList.classList.add('images-preview');
+            urls.forEach((url, i) => {
+                const item = document.createElement('li');
+                item.dataset.index = i;
+                item.classList.add('images-preview-item');
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.ariaLabel = 'Remover imagem';
+                removeBtn.classList.add('btn-clear-image');
+                removeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 7l16 0"></path><path d="M10 11l0 6"></path><path d="M14 11l0 6"></path><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path></svg>`;
+                removeBtn.addEventListener('click', e => removeFile(
+                    e,
+                    containerId,
+                    labelText,
+                    inputId,
+                    urls,
+                    multiple,
+                    fileType
+                ));
+                item.append(removeBtn);
+
+                const image = document.createElement('img');
+                image.classList.add('image-preview');
+                image.src = url;
+                item.append(image);
+
+                thumbList.append(item);
+            });
+            outputArr.push(thumbList);
+        } else {
+            const listItems = document.createElement('ul');
+            listItems.classList.add('files-list');
+            urls.forEach((url, i) => {
+                const item = document.createElement('li');
+                item.dataset.index = i;
+                item.classList.add('files-list-item');
+
+                const div = document.createElement('div');
+                div.classList.add('files-list-item-name');
+                div.textContent = url.replace(/.*[\\\/]/, '');
+                item.append(div);
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.ariaLabel = 'Remover imagem';
+                removeBtn.classList.add('btn-remove-file');
+                removeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 7l16 0"></path><path d="M10 11l0 6"></path><path d="M14 11l0 6"></path><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path></svg>`;
+                removeBtn.addEventListener('click', e => removeFile(
+                    // e, containerId, labelText, inputId, urls, multiple, fileType
+                    e,
+                    containerId,
+                    labelText,
+                    inputId,
+                    urls,
+                    multiple,
+                    fileType
+                ));
+                item.append(removeBtn);
+
+                listItems.append(item);
+            });
+            outputArr.push(listItems);
+        }
+
+        // Guarda a URL apenas das imagens que já existem, não das novas
+        const uploadedImageUrls = urls.filter(url => !url.startsWith('blob:'));
+        const inputUploadedImageUrls = document.createElement('input');
+        inputUploadedImageUrls.id = `urls-${inputId}`;
+        inputUploadedImageUrls.name = `urls-${inputId}`;
+        inputUploadedImageUrls.type = 'text';
+        inputUploadedImageUrls.style.display = 'none';
+        inputUploadedImageUrls.value = uploadedImageUrls.length > 0 ? uploadedImageUrls.join(',') : '';
+        outputArr.push(inputUploadedImageUrls);
+
+        container.append(...outputArr);
+
+        // renderiza o input file "verdadeiro" 
+        // este campo utiliza o id e name corretos e sempre é enviado ao servidor
+
+        renderRealInputFile(container, inputId, multiple, urls, files);
+    }
+
+    // Input file "verdadeiro" que armazena as novas imagens
+    function renderRealInputFile(container, inputId, multiple, urls, files) {
+
+        // Armazena os arquivos do input existente
+        let existingFiles = [];
+        const existingInput = document.querySelector(`#${inputId}`);
+
+        if (typeof existingInput !== undefined && existingInput) {
+            // salva os arquivos do input "verdadeiro"
+            existingFiles = existingInput.files;
+            // Remove o input existente
+            existingInput.remove();
+        }
+
+        // Cria um novo input
+        const form = container.closest('form');
+        const hiddenInputFile = document.createElement('input');
+        hiddenInputFile.id = inputId;
+        hiddenInputFile.name = multiple ? `${inputId}[]` : `${inputId}`;
+        hiddenInputFile.type = 'file';
+        hiddenInputFile.classList.add('hidden-file-input');
+        hiddenInputFile.multiple = multiple;
+        hiddenInputFile.style.display = 'none';
+
+        // Salva os arquivos do input "temporário"
+        const dataTransfer = new DataTransfer();
+        for (const file of existingFiles) {
+            // Não inclui os arquivos já salvos, apenas os novos ainda não salvos
+            if (!urls.some(url => url.includes(file.name))) {
+                dataTransfer.items.add(file);
+            }
+        }
+
+        for (const file of files) {
+            // Não inclui os arquivos já salvos, apenas os novos ainda não salvos
+            if (!urls.some(url => url.includes(file.name))) {
+                dataTransfer.items.add(file);
+            }
+        }
+        // salva os arquivos no input "verdadeiro"
+        hiddenInputFile.files = dataTransfer.files;
+
+        // o input é adicionado ao final do form e não no container
+        // assim ele não é removido do DOM quando 
+        // o container é renderizado novamente
+        form.append(hiddenInputFile);
+    }
+
+    // Adiciona uma nova imagem
+    function addFile(e, containerId, labelText, inputId, urls, multiple, fileType) {
+        if (!multiple) {
+            urls.length = 0;
+        }
+        // pega as imagens do input "temporário"
+        const files = e.target.files;
+        for (const file of files) {
+            // salva na lista de urls para exibir a miniatura
+            urls.push(URL.createObjectURL(file));
+        }
+        // renderiza o container novamente com os dados atualizados
+        //     containerId,
+        //     labelText,
+        //     inputId,
+        //     urls = [],
+        //     multiple = false,
+        //     files = [],
+        //     fileType = 'image'
+        renderInputFiles(
+            containerId,
+            labelText,
+            inputId,
+            urls,
+            multiple,
+            files,
+            fileType
+        );
+    }
+
+    // remove uma imagem
+    function removeFile(e, containerId, labelText, inputId, urls, multiple, fileType) {
+        const btn = e.target;
+        const listItem = btn.closest('li');
+        const item = fileType === 'image' ? listItem.querySelector('img') : listItem.querySelector('div');
+
+        // pega o índice do arquivo dentro da lista de urls
+        if (fileType === 'image') {
+            const urlIndex = urls.indexOf(item.src);
+            if (urlIndex > -1) {
+                urls.splice(urlIndex, 1);
+            }
+        } else {
+            urls = urls.filter(url => !url.includes(item.textContent));
+        }
+        const hiddenInputFile = document.querySelector(`#${inputId}`);
+        const inputUploadedImageUrls = document.querySelector(`#urls-${inputId}`);
+
+        // pega o array de imagens do input de imagens já salvas
+        // estas imagens estão na lista de miniaturas também (urls)
+        let uploadedImageUrlsArr = inputUploadedImageUrls.value.split(',');
+
+        // garante que não seja criado um array com valor vazio ou espaço em branco
+        uploadedImageUrlsArr = uploadedImageUrlsArr.map(item => item.trim()).filter(item => item);
+
+        // índice da imagem que será removida do input "verdadeiro"
+        let removeFileIndex = parseInt(listItem.dataset.index);
+
+        // subtrai o array de imagens já salvas
+        removeFileIndex = uploadedImageUrlsArr.length > 0 ? parseInt(removeFileIndex - uploadedImageUrlsArr.length) : removeFileIndex;
+        const files = hiddenInputFile.files;
+        const dataTransfer = new DataTransfer();
+        for (let i = 0; i < files.length; i++) {
+            // garante que a imagem removida não esteja mais no input "verdadeiro"
+            if (removeFileIndex !== i) {
+                dataTransfer.items.add(files[i]);
+            }
+        }
+
+        // remove o input "verdadeiro"
+        hiddenInputFile.remove();
+
+        // ele será renderizado novamente com os dados atualizados
+        renderInputFiles(
+            containerId,
+            labelText,
+            inputId,
+            urls,
+            multiple,
+            dataTransfer.files,
+            fileType
+        );
+        // Parei aqui
+        // checando se tudo continua funcionando (projetos, lançamento financeiro*, diario de obra, ...)
+        // (*) trocar o input do lançamento financeiro pelo novo componente
+    }
+
     // Estágios do Projeto
     function estagiosAddItem() {
         const newEstagio = {
@@ -445,70 +747,14 @@
     }
 
     // Imagem do projeto
-    function removeImage(e) {
-        e.preventDefault();
-        const btn = e.target;
-        const container = btn.closest('.file-image-preview');
-        const fileInput = container.querySelector('#featured-image');
-        const deleteInput = container.querySelector('#delete-featured-image');
-        deleteInput.value = true;
-        fileInput.value = null;
-        projetoImages.splice(btn.dataset.index, 1);
-        renderImagesPreview();
-    }
 
-    function addProjetoImage() {
-        const fileInput = document.querySelector('#featured-image');
-        if (typeof fileInput === undefined || !fileInput) {
-            return;
-        }
-        fileInput.addEventListener('input', e => {
-            const newFiles = e.target.files;
-            for (const newFile of newFiles) {
-                projetoImages.push(URL.createObjectURL(newFile));
-            }
-            renderImagesPreview();
-        });
-    }
-
-    function toggleImagesPreviewInput() {
-        const container = document.querySelector('#file-image-preview');
-        if (projetoImages.length > 0) {
-            container.classList.add('has-image');
-        } else {
-            container.classList.remove('has-image');
-        }
-    }
-
-    function renderImagesPreview() {
-        const imagesPreviewList = document.querySelector('#images-preview');
-        if (typeof imagesPreviewList === undefined || !imagesPreviewList) {
-            return;
-        }
-
-        imagesPreviewList.innerHTML = '';
-        projetoImages.forEach((image, i) => {
-            const li = document.createElement('li');
-            li.classList.add('images-preview-item');
-
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.classList.add('btn-clear-image');
-            btn.ariaLabel = 'Remover imagem';
-            btn.dataset.index = i;
-            btn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>`;
-            btn.addEventListener('click', removeImage);
-            li.appendChild(btn);
-
-            const newImage = document.createElement('img');
-            newImage.classList.add('image-preview');
-            newImage.src = image;
-            li.appendChild(newImage);
-
-            imagesPreviewList.appendChild(li);
-        });
-        toggleImagesPreviewInput();
+    function renderProjetoInputsFile() {
+        renderInputFiles(
+            'projeto-featured-image-preview-container',
+            'Imagem do projeto',
+            'featured-image',
+            projetoImages
+        );
     }
 
     function formsValidation() {
@@ -604,7 +850,7 @@
                             featuredImageInput.value = '';
                             projetoImages.length = 0;
                             projetoImages.push(...response.data.projetos_data.images);
-                            renderImagesPreview();
+                            renderProjetoInputsFile();
                             renderEstagios();
                             featuredImageInput.dispatchEvent(new Event('input', { bubbles: true }));
                             priceInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -1254,7 +1500,6 @@
         const selectedDataEnd = document.querySelector('#data-lancamentos-desc').value;
         const search = document.querySelector('#search-lancamentos').value;
         let results = lancamentosFinanceiros;
-        console.log('results', results);
 
 
         // Filtra estágio
@@ -1551,6 +1796,9 @@
 
     function editLancamentoFinanceiroObraForm() {
         const form = document.querySelector('#form-edit-lancamento-financeiro-obra');
+        if (typeof form === undefined || !form) {
+            return;
+        }
         const modalAlertPlaceholder = document.getElementById('modal-alert-placeholder');
         const tableAlertPlaceholder = document.getElementById('table-alert-placeholder');
         const newLancamentoSuccessMessage = sessionStorage.getItem('showSuccessAlert');
@@ -1655,8 +1903,10 @@
                         <h2 class="projeto-item-title">${item.title}</h2>
                         <div class="projeto-item-description">${item.description}</div>
                         <div class="badge text-bg-disabled mt-3 px-4 fw-bold">${item.week}</div>
-                    </div>
-                    <img class="projeto-item-img ms-auto" src="${item.thumbnail_url}" alt="${item.title}">`;
+                    </div>`;
+                if (item.thumbnail_url) {
+                    projetoItemContent.innerHTML += `<img class="projeto-item-img ms-auto" src="${item.thumbnail_url}" alt="${item.title}">`;
+                }
                 container.append(projetoItemContent);
 
                 const actions = document.createElement('div');
@@ -1712,8 +1962,6 @@
             let diario = diariosDaObra.filter(diario => diario.id === parseInt(postId));
             const photosUrl = diario[0].photos_url;
             const videosUrl = diario[0].videos_url;
-            const photosId = diario[0].photos_id;
-            const videosId = diario[0].videos_id;
             const imgList = [];
 
             if (photosUrl) {
@@ -1779,11 +2027,9 @@
 
         document.body.appendChild(modalDiv);
 
-        // 4. Inicializar e mostrar usando a API do Bootstrap
         const modalBootstrap = new bootstrap.Modal(modalDiv);
         modalBootstrap.show();
 
-        // 5. Remover o elemento do DOM após fechar para não poluir a página
         modalDiv.addEventListener('hidden.bs.modal', () => {
             modalDiv.remove();
         });
@@ -1829,11 +2075,9 @@
         modalDiv.append(modalDialog);
         document.body.append(modalDiv);
 
-        // 4. Inicializar e mostrar usando a API do Bootstrap
         const modalBootstrap = new bootstrap.Modal(modalDiv);
         modalBootstrap.show();
 
-        // 5. Remover o elemento do DOM após fechar para não poluir a página
         modalDiv.addEventListener('hidden.bs.modal', () => {
             modalDiv.remove();
         });
@@ -1844,7 +2088,7 @@
         estagiosLancamentosSelect.addEventListener('input', filterDiarios);
     }
 
-    function filterDiarios(e) {
+    function filterDiarios() {
         const selectedEstagio = document.querySelector('#estagios-diario-da-obra').value;
         let results = diariosDaObra;
 
@@ -1859,6 +2103,243 @@
         renderDiariosDeObraList(results);
     }
 
+    function renderDiarioDaObraInputsFile() {
+        renderInputFiles(
+            'diario-da-obra-featured-image-container',
+            'Adicionar capa do album (foto)',
+            'diario-da-obra-featured-image',
+            []
+        );
+        renderInputFiles(
+            'diario-da-obra-gallery-image-container',
+            'Adicionar fotos',
+            'diario-da-obra-gallery-image',
+            [],
+            true
+        );
+        renderInputFiles(
+            'diario-da-obra-gallery-video-container',
+            'Adicionar vídeos',
+            'diario-da-obra-gallery-video',
+            [],
+            true,
+            [],
+            'video'
+        );
+    }
+
+    function resetDiarioDaObraInputs() {
+        const form = document.getElementById('form-editar-diario-da-obra');
+        if (typeof form === undefined || !form) {
+            return;
+        }
+
+        const dataDiarioInput = form.querySelector('#diario-da-obra-date');
+        const semanaDiarioSelect = form.querySelector('#diario-da-obra-semana');
+        const estagioDiarioSelect = form.querySelector('#estagio-diario');
+        const descricaoDiarioInput = form.querySelector('#diario-da-obra-content');
+        const postIdInput = form.querySelector('[name="post_id"]');
+        const btnDelete = form.querySelector('#btn-delete-diario-da-obra');
+        const btnSubmit = form.querySelector('#btn-save-diario-da-obra');
+        const hiddenInputFiles = form.querySelectorAll('.hidden-file-input');
+
+        form.classList.remove('was-validate');
+        form.classList.add('not-validate');
+        hiddenInputFiles.forEach(hiddenInput => hiddenInput.remove());
+        renderDiarioDaObraInputsFile();
+        setInputValue(dataDiarioInput);
+        setInputValue(semanaDiarioSelect);
+        setInputValue(estagioDiarioSelect);
+        setInputValue(descricaoDiarioInput);
+        setInputValue(postIdInput);
+
+        btnDelete.disabled = false;
+        btnSubmit.innerHTML = btnSubmit.dataset.originalText;
+        btnSubmit.disabled = false;
+    }
+
+    function setDiarioDaObraData(diario, container) {
+
+        const dataDiarioInput = container.querySelector('#diario-da-obra-date');
+        const semanaDiarioSelect = container.querySelector('#diario-da-obra-semana');
+        const estagioDiarioSelect = container.querySelector('#estagio-diario');
+        const descricaoDiarioInput = container.querySelector('#diario-da-obra-content');
+
+        const postIdInput = container.querySelector('[name="post_id"]');
+
+        setDateInputValue(dataDiarioInput, diario.date);
+        setInputValue(descricaoDiarioInput, diario.description);
+        setInputValue(semanaDiarioSelect, diario.week_number);
+        setInputValue(estagioDiarioSelect, diario.estagio);
+        if (diario.thumbnail_url) {
+            renderInputFiles(
+                'diario-da-obra-featured-image-container',
+                'Adicionar capa do album (foto)',
+                'diario-da-obra-featured-image',
+                [diario.thumbnail_url]
+            );
+        }
+        if (diario.photos_url) {
+            renderInputFiles(
+                'diario-da-obra-gallery-image-container',
+                'Adicionar fotos',
+                'diario-da-obra-gallery-image',
+                diario.photos_url,
+                true
+            );
+        }
+        if (diario.videos_url) {
+            renderInputFiles(
+                'diario-da-obra-gallery-video-container',
+                'Adicionar vídeos',
+                'diario-da-obra-gallery-video',
+                diario.videos_url,
+                true,
+                [],
+                'video'
+            );
+        }
+        setInputValue(postIdInput, diario.id);
+    }
+
+    function getDiariodaObraData(postId, container) {
+        const btnSubmit = container.querySelector('#btn-save-diario-da-obra');
+        const btnDelete = container.querySelector('#btn-delete-diario-da-obra');
+        const alertPlaceholder = document.getElementById('modal-alert-placeholder');
+        const ajaxUrl = ajax_object.ajax_url;
+        const data = new FormData();
+        data.append('action', 'pu_get_diario_da_obra_data');
+        data.append('post_id', postId);
+        fetch(ajaxUrl, {
+            method: 'POST',
+            body: data
+        })
+            .then((response) => response.json())
+            .then((response) => {
+                const status = response.success ? 'success' : 'danger';
+                if (status === 'success') {
+                    setDiarioDaObraData(response.data.diario_da_obra, container);
+                }
+            })
+            .catch((error) => {
+                showAlert(alertPlaceholder, error, 'danger');
+            })
+            .finally(() => {
+                btnSubmit.disabled = false;
+                btnDelete.disabled = false;
+            });
+    }
+
+    function modalDiarioDeObra() {
+        const modalDiarioDeObra = document.getElementById('modal-editar-diario-da-obra');
+        if (typeof modalDiarioDeObra === undefined || !modalDiarioDeObra) {
+            return;
+        }
+        modalDiarioDeObra.addEventListener('hidden.bs.modal', event => {
+            resetDiarioDaObraInputs();
+            const alertPlaceholder = document.getElementById('modal-alert-placeholder');
+            alertPlaceholder.innerHTML = '';
+        });
+        modalDiarioDeObra.addEventListener('show.bs.modal', event => {
+            resetDiarioDaObraInputs();
+            const container = event.target;
+            const postId = event.relatedTarget.dataset.id;
+            const btnSubmit = container.querySelector('#btn-save-diario-da-obra');
+            const btnDelete = container.querySelector('#btn-delete-diario-da-obra');
+            btnSubmit.disabled = true;
+            btnDelete.disabled = true;
+            const alertPlaceholder = document.getElementById('modal-alert-placeholder');
+            alertPlaceholder.innerHTML = '';
+            if (typeof postId && postId) {
+                getDiariodaObraData(postId, container);
+            } else {
+                btnSubmit.disabled = false;
+            }
+        });
+    }
+
+    function editDiarioDaObraForm() {
+        let form = document.querySelector('#form-editar-diario-da-obra');
+        if (typeof form === undefined || !form) {
+            return;
+        }
+        const modalAlertPlaceholder = document.getElementById('modal-alert-placeholder');
+        const tableAlertPlaceholder = document.getElementById('table-alert-placeholder');
+        const newDiarioDaObraSuccessMessage = sessionStorage.getItem('showSuccessAlert');
+        if (newDiarioDaObraSuccessMessage) {
+            showAlert(modalAlertPlaceholder, newDiarioDaObraSuccessMessage, 'success');
+            sessionStorage.removeItem('showSuccessAlert');
+        }
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+
+            if (typeof document.getElementById('form-alert') !== undefined && document.getElementById('form-alert')) {
+                const formAlert = bootstrap.Alert.getOrCreateInstance('#form-alert');
+                formAlert.close();
+            }
+
+            if (!form.checkValidity()) {
+                return;
+            }
+
+            form.classList.add('was-validated');
+            const btnSubmit = form.querySelector('#btn-save-diario-da-obra');
+
+            if (typeof btnSubmit === undefined || !btnSubmit) {
+                return;
+            }
+
+            if (btnSubmit.disabled) {
+                return;
+            }
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>   <span class="ml-5">Enviando...</span>`;
+            tooglePreloader(true);
+
+            const ajaxUrl = ajax_object.ajax_url;
+            const data = new FormData(form);
+
+            if ((e.submitter.name === 'delete-post')) {
+                data.append('delete-post', true);
+            } else {
+                data.delete('delete-post');
+            }
+            fetch(ajaxUrl, {
+                method: 'POST',
+                body: data
+            })
+                .then((response) => response.json())
+                .then((response) => {
+                    const status = response.success ? 'success' : 'danger';
+                    let showAlertContainer = modalAlertPlaceholder;
+                    const msg = response.data.msg;
+                    if (status === 'success') {
+                        showAlertContainer = tableAlertPlaceholder;
+                        resetDiarioDaObraInputs();
+                        diariosDaObra = response.data.diarios_da_obra;
+
+                        filterDiarios();
+                        const modalDiarioDaObra = document.getElementById('modal-editar-diario-da-obra');
+                        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalDiarioDaObra);
+                        modalInstance.hide();
+                    }
+                    showAlert(showAlertContainer, msg, status);
+                })
+                .catch((error) => {
+                    showAlert(modalAlertPlaceholder, error, 'danger');
+                })
+                .finally(() => {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = btnSubmit.dataset.originalText;
+                    form.classList.remove('was-validated');
+                    tooglePreloader(false);
+                });
+
+        });
+    }
+
+
     window.addEventListener('load', () => {
         highlightInit();
         inputMasks();
@@ -1866,8 +2347,7 @@
         estagiosRepeater();
         renderEstagios();
         estagioReorderItem();
-        renderImagesPreview();
-        addProjetoImage();
+        renderProjetoInputsFile();
         formsValidation();
         projetoSettingsForm();
         loadedSettingsForm();
@@ -1888,5 +2368,8 @@
         editLancamentoFinanceiroObraForm();
         diarioDeObraInit();
         cleanExpiredCache();
+        renderDiarioDaObraInputsFile();
+        modalDiarioDeObra();
+        editDiarioDaObraForm();
     });
 })();

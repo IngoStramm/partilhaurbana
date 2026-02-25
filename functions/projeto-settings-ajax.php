@@ -96,10 +96,10 @@ function pu_projeto_settings_form()
 
     $featured_image_file = isset($_FILES['featured-image']) && $_FILES['featured-image'] ? $_FILES['featured-image'] : null;
 
-    $delete_featured_image = isset($_POST['delete-featured-image']) && $_POST['delete-featured-image'] ? (bool)$_POST['delete-featured-image'] : null;
+    $urls_featured_image = isset($_POST['urls-featured-image']) && $_POST['urls-featured-image'] ? (bool)$_POST['urls-featured-image'] : null;
 
     // Apaga a imagem atual do projeto
-    if ($delete_featured_image && $update_projeto_id) {
+    if (!$urls_featured_image && $update_projeto_id) {
         $deleted_projeto_thumbnail_id = true;
 
         $projeto_thumbnail_id = get_post_meta($update_projeto_id, '_thumbnail_id', true);
@@ -177,6 +177,7 @@ function pu_projeto_settings_form()
 
     $response = array(
         'msg'                   => __('Projeto salvo com sucesso!', 'pu'),
+        'urls_featured_image'   => $urls_featured_image,
         'projetos_data'         => $projetos_data
     );
 
