@@ -133,14 +133,7 @@ function pu_modal_editar_lancamento_financeiro_obra()
                                 </div>
 
                                 <div class="col-md-12">
-                                    <div class="form-group file-input" id="file-input">
-                                        <label for="arquivo-lancamento" class="mb-2 form-label">
-                                            <?php _e('Adicionar comprovante', 'pu'); ?>
-                                        </label>
-                                        <input class="form-control" type="file" id="arquivo-lancamento" name="arquivo-lancamento">
-                                        <input type="hidden" name="arquivo-lancamento-url" id="arquivo-lancamento-url">
-                                        <div id="arquivo-lancamento-url-text" class="arquivo-lancamento-url-text"></div>
-                                    </div>
+                                    <div class="form-group" id="arquivo-lancamento-container"></div>
                                 </div>
                             </div>
                             <div class="row">

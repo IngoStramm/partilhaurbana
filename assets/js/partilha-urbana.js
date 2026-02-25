@@ -368,6 +368,7 @@
             } else if (fileType === 'video') {
                 tempInputFile.accept = 'video/mp4,video/webm,.avi';
             }
+
             tempInputFile.addEventListener('input', e => {
                 addFile(e, containerId, labelText, inputId, urls, multiple, fileType);
             });
@@ -1599,15 +1600,22 @@
         const valorUnitarioLancamentoInput = form.querySelector('#valor-unitario-lancamento');
         const quantidadeLancamentoInput = form.querySelector('#quantidade-lancamento');
         const valorLancamentoInput = form.querySelector('#valor-lancamento');
-        const arquivoLancamentoInput = form.querySelector('#arquivo-lancamento');
-        const arquivoLancamentoUrlInput = form.querySelector('#arquivo-lancamento-url');
-        const arquivoLancamentoUrlDiv = form.querySelector('#arquivo-lancamento-url-text');
         const postIdInput = form.querySelector('[name="post_id"]');
         const btnDelete = form.querySelector('#btn-delete-lancamento');
         const btnSubmit = form.querySelector('button[type="submit"]');
 
         form.classList.remove('was-validate');
         form.classList.add('not-validate');
+
+        renderInputFiles(
+            'arquivo-lancamento-container',
+            'Adicionar comprovante',
+            'arquivo-lancamento',
+            [],
+            false,
+            [],
+            'txt'
+        );
 
         setInputValue(fornecedorLancamentoSelect);
         setInputValue(codigoFaturaLancamentoInput);
@@ -1619,10 +1627,7 @@
         setInputValue(valorUnitarioLancamentoInput, '0,00');
         setInputValue(quantidadeLancamentoInput, 1);
         setInputValue(valorLancamentoInput, '0,00');
-        setInputValue(arquivoLancamentoInput);
-        setInputValue(arquivoLancamentoUrlInput);
         setInputValue(postIdInput);
-        arquivoLancamentoUrlDiv.innerHTML = '';
 
         btnDelete.disabled = false;
         btnSubmit.innerHTML = btnSubmit.dataset.originalText;
@@ -1662,10 +1667,20 @@
         quantidadeLancamentoInput.addEventListener('input', calcValorTotalLancamento);
         quantidadeLancamentoInput.addEventListener('blur', setDefaultValueOnBlur);
 
-        const arquivoLancamentoInput = document.querySelector('#arquivo-lancamento');
-        const arquivoLancamentoUrlInput = document.querySelector('#arquivo-lancamento-url');
-        arquivoLancamentoInput.addEventListener('input', fileInputEvt);
-        arquivoLancamentoUrlInput.addEventListener('input', urlInputEvt);
+        // const arquivoLancamentoInput = document.querySelector('#arquivo-lancamento');
+        // const arquivoLancamentoUrlInput = document.querySelector('#arquivo-lancamento-url');
+        // arquivoLancamentoInput.addEventListener('input', fileInputEvt);
+        // arquivoLancamentoUrlInput.addEventListener('input', urlInputEvt);
+
+        renderInputFiles(
+            'arquivo-lancamento-container',
+            'Adicionar comprovante',
+            'arquivo-lancamento',
+            [],
+            false,
+            [],
+            'txt'
+        );
     }
 
     function getLancamentoFinanceiroData(postId, container) {
@@ -1721,10 +1736,23 @@
         setInputValue(titleLancamentoInput, lancamento.title);
         setInputValue(valorUnitarioLancamentoInput, lancamento.valor_unitario);
         setInputValue(quantidadeLancamentoInput, quantidade);
-        setInputValue(valorLancamentoInput, lancamento.valor);
-        if (lancamento.comprovante) {
-            setInputValue(arquivoLancamentoUrlInput, lancamento.comprovante);
+        // setInputValue(valorLancamentoInput, lancamento.valor);
+        // if (lancamento.comprovante) {
+        //     setInputValue(arquivoLancamentoUrlInput, lancamento.comprovante);
+        // }
+        const comprovanteArr = [];
+        if (typeof lancamento.comprovante !== undefined && lancamento.comprovante) {
+            comprovanteArr.push(lancamento.comprovante);
         }
+        renderInputFiles(
+            'arquivo-lancamento-container',
+            'Adicionar comprovante',
+            'arquivo-lancamento',
+            comprovanteArr,
+            false,
+            [],
+            'txt'
+        );
         setInputValue(postIdInput, lancamento.id);
     }
 
@@ -1763,35 +1791,6 @@
             e.target.value = defaultValue;
             e.target.dispatchEvent(new Event('input', { bubbles: true }));
         }
-    }
-
-    function fileInputEvt(e) {
-        const arquivoLancamentoUrlInput = document.querySelector('#arquivo-lancamento-url');
-        setInputValue(arquivoLancamentoUrlInput, e.target.value);
-    }
-
-    function urlInputEvt() {
-        const arquivoLancamentoUrlInput = document.querySelector('#arquivo-lancamento-url');
-        const arquivoLancamentoUrlDiv = document.querySelector('#arquivo-lancamento-url-text');
-        if (arquivoLancamentoUrlInput.value) {
-            const fileUrl = arquivoLancamentoUrlInput.value;
-            arquivoLancamentoUrlDiv.innerHTML = fileUrl;
-            const removeFileBtn = document.createElement('button');
-            removeFileBtn.type = 'button';
-            removeFileBtn.classList.add('remove-file-btn');
-            removeFileBtn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 7l16 0"></path><path d="M10 11l0 6"></path><path d="M14 11l0 6"></path><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path></svg>`;
-            removeFileBtn.addEventListener('click', removeFileEvt);
-            arquivoLancamentoUrlDiv.append(removeFileBtn);
-        } else {
-            arquivoLancamentoUrlDiv.innerHTML = '';
-        }
-    }
-
-    function removeFileEvt() {
-        const arquivoLancamentoInput = document.querySelector('#arquivo-lancamento');
-        setInputValue(arquivoLancamentoInput);
-
     }
 
     function editLancamentoFinanceiroObraForm() {
@@ -2338,7 +2337,6 @@
 
         });
     }
-
 
     window.addEventListener('load', () => {
         highlightInit();

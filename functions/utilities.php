@@ -1073,7 +1073,7 @@ function pu_get_lancamento_financeiro_by_id($post_id)
         $lancamento->date = $date;
 
         $comprovante = get_post_meta($post_id, 'comprovante', true);
-        $lancamento->comprovante = $comprovante;
+        $lancamento->comprovante = $comprovante && !empty($comprovante) ? $comprovante : null;
 
         $estagio_id = get_post_meta($post_id, 'estagio_lancamento', true);
         $projeto_id = get_post_meta($post_id, 'projeto_id', true);

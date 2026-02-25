@@ -71,7 +71,7 @@ function pu_edit_lancamento_financeiro_obra()
     $deleted_comprovante_file = false;
     $deleted_post = false;
 
-    $arquivo_lancamento_url = isset($_POST['arquivo-lancamento-url']) && $_POST['arquivo-lancamento-url'] ? $_POST['arquivo-lancamento-url'] : null;
+    $arquivo_lancamento_url = isset($_POST['urls-arquivo-lancamento']) && $_POST['urls-arquivo-lancamento'] ? $_POST['urls-arquivo-lancamento'] : null;
     $arquivo_lancamento_file = isset($_FILES['arquivo-lancamento']) && $_FILES['arquivo-lancamento'] ? $_FILES['arquivo-lancamento'] : null;
 
     $remove_current_file = false;
