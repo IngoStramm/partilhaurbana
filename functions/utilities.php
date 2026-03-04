@@ -900,6 +900,7 @@ function pu_obra_posts_types()
         'projetos' => __('Projeto', 'pu'),
         'financeiro' => __('Financeiro', 'pu'),
         'diario-da-obra' => __('Diário da Obra', 'pu'),
+        'documento' => __('Documento', 'pu'),
     );
     return $post_types;
 }
@@ -1346,6 +1347,14 @@ function pu_format_bytes($bytes, $precision = 2)
     return $formattedValue . ' ' . $units[$unitIndex];
 }
 
+/**
+ * pu_check_files_size
+ *
+ * @param  array $files
+ * @param  boolean $multiples
+ * @param  string $type
+ * @return object
+ */
 function pu_check_files_size($files, $multiples = true, $type = 'image')
 {
     $return_obj = new stdClass();
@@ -1396,4 +1405,97 @@ function pu_check_files_size($files, $multiples = true, $type = 'image')
     $return_obj->msg = $msg;
 
     return $return_obj;
+}
+
+/**
+ * pu_documento_type
+ *
+ * @return array
+ */
+function pu_documento_type()
+{
+    $options = [];
+    $options['contrato'] = __('Contrato', 'pu');
+    $options['termo'] = __('Termo', 'pu');
+    return $options;
+}
+
+/**
+ * pu_get_documento_by_id
+ *
+ * @param  int $post_id
+ * @return object
+ */
+function pu_get_documento_by_id($post_id)
+{
+    $post = get_post($post_id);
+    $documento = new stdClass();
+
+    if ($post) {
+
+        $documento->id = $post_id;
+        $documento->title = $post->post_title;
+        $documento->publish_date = $post->post_date;
+
+        $author_id = $post->post_author;
+        $user_info = get_userdata($author_id);
+        $documento->author = $user_info->display_name;
+
+        $tipos = pu_documento_type();
+        $tipo_key = get_post_meta($post_id, 'documento_type', true);
+        $documento->tipo = $tipo_key && isset($tipos[$tipo_key]) ? $tipos[$tipo_key] : null;
+        $documento->tipo_key = $tipo_key ? $tipo_key : null;
+
+        $arquivo = get_post_meta($post_id, 'file', true);
+        $documento->arquivo = $arquivo && !empty($arquivo) ? $arquivo : null;
+
+        $projeto_id = get_post_meta($post_id, 'projeto_id', true);
+        $documento->projeto_id = (int)$projeto_id;
+    }
+    return $documento;
+}
+
+
+/**
+ * pu_get_documentos_by_obra_id
+ *
+ * @param  int $obra_id
+ * @return array
+ */
+function pu_get_documentos_by_obra_id($obra_id)
+{
+    $args = array(
+        'post_type' => 'documento',
+        'nopaging' => true,
+        'meta_key' => 'projeto_id',
+        'meta_value' => $obra_id,
+        'order'     => 'ASC',
+        'orderby'   => 'title'
+    );
+    $posts = get_posts($args);
+    $documentos = [];
+    foreach ($posts as $post) {
+        $post_id = $post->ID;
+        $documento = pu_get_documento_by_id($post_id);
+        $documentos[] = $documento;
+    }
+    return $documentos;
+}
+
+/**
+ * pu_get_documentos
+ *
+ * @return array
+ */
+function pu_get_documentos()
+{
+    if (!is_post_type_archive('documento')) {
+        return;
+    }
+    $obra_id = isset($_GET['obra_id']) && $_GET['obra_id'] ? $_GET['obra_id'] : null;
+    if (!$obra_id) {
+        return;
+    }
+    $documentos = pu_get_documentos_by_obra_id($obra_id);
+    return $documentos;
 }

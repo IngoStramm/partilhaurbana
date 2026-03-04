@@ -29,3 +29,4 @@ require_once 'select-obra-content-form-handle.php';
 require_once 'obras-messages.php';
 require_once 'lancamento-financeiro-ajax.php';
 require_once 'diario-da-obra-ajax.php';
+require_once 'documento-ajax.php';

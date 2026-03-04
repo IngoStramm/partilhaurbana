@@ -32,7 +32,7 @@ function pu_diario_da_obra_post_type()
     $portfolio->set_arguments(
         array(
             'supports'             => array('title', 'thumbnail'),
-            'menu_icon'         => 'dashicons-calculator',
+            'menu_icon'         => 'dashicons-welcome-write-blog',
             'show_in_nav_menus' => true
         )
     );

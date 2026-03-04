@@ -59,6 +59,7 @@ function pu_frontend_scripts()
     $projetos_data = pu_get_projeto_data();
     $lancamentos_financeiros = pu_get_lancamentos_financeiros_obra();
     $diarios_da_obra = pu_get_diarios_da_obra();
+    $documentos = pu_get_documentos();
 
     wp_localize_script(
         'partilha-urbana-script',
@@ -75,7 +76,8 @@ function pu_frontend_scripts()
             'site_url'                          => get_site_url(),
             'curr_url'                          => get_permalink(),
             'lancamentos_financeiros'           => $lancamentos_financeiros,
-            'diarios_da_obra'                   => $diarios_da_obra
+            'diarios_da_obra'                   => $diarios_da_obra,
+            'documentos'                        => $documentos
         )
     );
 

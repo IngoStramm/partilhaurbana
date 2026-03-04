@@ -11,6 +11,7 @@
     const currUrl = ajax_object.curr_url;
     let lancamentosFinanceiros = ajax_object.lancamentos_financeiros;
     let diariosDaObra = ajax_object.diarios_da_obra;
+    let documentos = ajax_object.documentos;
     const projecaoInputs = [
         'preco-venda',
         'comissao-impostos',
@@ -292,7 +293,7 @@
         });
     }
 
-    // Campos de imagens com miniaturas
+    // Campo de arquivo com miniatura/nome do arquivo
     /**
      * renderInputFiles
      * @param  string containerId
@@ -1603,10 +1604,11 @@
         const postIdInput = form.querySelector('[name="post_id"]');
         const btnDelete = form.querySelector('#btn-delete-lancamento');
         const btnSubmit = form.querySelector('button[type="submit"]');
+        const hiddenInputFiles = form.querySelectorAll('.hidden-file-input');
 
         form.classList.remove('was-validate');
         form.classList.add('not-validate');
-
+        hiddenInputFiles.forEach(hiddenInput => hiddenInput.remove());
         renderInputFiles(
             'arquivo-lancamento-container',
             'Adicionar comprovante',
@@ -2338,6 +2340,310 @@
         });
     }
 
+    // Documentos
+
+    function documentosObraTableInit() {
+        if (!documentos) {
+            return;
+        }
+        renderDocumentosObraTable(documentos);
+        documentoObraTableFiltersEvts();
+    }
+
+
+    function renderDocumentosObraTable(rowsData) {
+        const table = document.querySelector('#table-documento-obra');
+        if (typeof table === undefined || !table) {
+            return;
+        }
+        const tbody = table.querySelector('tbody');
+        tbody.innerHTML = '';
+        const rowsArray = [];
+        if (rowsData.length > 0) {
+            rowsData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.dataset.id = row.id;
+                const documentoTitle = row.arquivo ? `<a class="table-link" target="_blank" href="${row.arquivo}">${row.title}</a>` : row.title;
+                const downloadIcon = row.arquivo ?
+                    `<a target="_blank" href="${row.arquivo}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 19 19" fill="none"><path d="M5.87984 9.50008L9.49888 13.329L13.1179 9.53718M9.49888 3.16675V13.1191M4.07031 15.8334H14.9275" stroke="#5A6A85" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>` :
+                    '';
+                const btnModal = document.createElement('button');
+                btnModal.classList.add('btn-no-style');
+                btnModal.type = 'button';
+                btnModal.dataset.id = row.id;
+                btnModal.dataset.bsToggle = 'modal';
+                btnModal.dataset.bsTarget = '#modal-editar-documento-obra';
+                btnModal.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5A6A85" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-pencil"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" /><path d="M13.5 6.5l4 4" /></svg>`;
+
+                const tdTitle = document.createElement('td');
+                tdTitle.innerHTML = documentoTitle;
+                tr.append(tdTitle);
+
+                const tdTipo = document.createElement('td');
+                tdTipo.innerHTML = row.tipo;
+                tr.append(tdTipo);
+
+                const tdIcon = document.createElement('td');
+                tdIcon.innerHTML = downloadIcon;
+                tr.append(tdIcon);
+
+                const tdModal = document.createElement('td');
+                tdModal.append(btnModal);
+                tr.append(tdModal);
+                rowsArray.push(tr);
+            });
+        } else {
+            const tr = document.createElement('tr');
+            tr.dataset.id = '0';
+            const td =
+                `<td colspan="7">
+                    <div class="not-found-container">
+                        <h2 class="not-found-message">Não há nada por aqui.</h2>
+                    </div>
+                </td>`;
+            tr.innerHTML = td;
+            rowsArray.push(tr);
+        }
+        tbody.append(...rowsArray);
+    }
+
+    function documentoObraTableFiltersEvts() {
+        const search = document.querySelector('#search-documentos');
+        search.addEventListener('input', filterDocumentos);
+    }
+
+    function filterDocumentos(e) {
+        const search = document.querySelector('#search-documentos').value;
+        let results = documentos;
+
+        // Filtra search
+        if (search) {
+            const searchValue = search.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            results = results.filter(item => {
+                const title = item.title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                const tipo = item.tipo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+                let filter = true;
+                if (title.includes(searchValue)) {
+                    filter = false;
+                }
+                if (tipo.includes(searchValue)) {
+                    filter = false;
+                }
+                if (!filter) {
+                    return item;
+                }
+            });
+        }
+        renderDocumentosObraTable(results);
+    }
+
+    function resetDocumentoInputs() {
+        const form = document.querySelector('#form-edit-documento-obra');
+        if (typeof form === undefined || !form) {
+            return;
+        }
+        const titleDocumentoInput = form.querySelector('#title');
+        const tipoSelect = form.querySelector('#tipo');
+        const postIdInput = form.querySelector('[name="post_id"]');
+        const btnDelete = form.querySelector('#btn-delete-documento');
+        const btnSubmit = form.querySelector('#btn-save-documento');
+        const hiddenInputFiles = form.querySelectorAll('.hidden-file-input');
+
+        form.classList.remove('was-validate');
+        form.classList.add('not-validate');
+        hiddenInputFiles.forEach(hiddenInput => hiddenInput.remove());
+        renderInputFiles(
+            'arquivo-documento-container',
+            'Adicionar arquivo',
+            'arquivo-documento',
+            [],
+            false,
+            [],
+            'any'
+        );
+
+        setInputValue(titleDocumentoInput);
+        setInputValue(tipoSelect);
+        setInputValue(postIdInput);
+
+        btnDelete.disabled = false;
+        btnSubmit.innerHTML = btnSubmit.dataset.originalText;
+        btnSubmit.disabled = false;
+
+    }
+
+    function setDocumentoData(documento, container) {
+        const tipoDocumentoSelect = container.querySelector('#tipo');
+        const titleDocumentoInput = container.querySelector('#title');
+        const postIdInput = container.querySelector('[name="post_id"]');
+
+        setInputValue(tipoDocumentoSelect, documento.tipo_key);
+        setInputValue(titleDocumentoInput, documento.title);
+
+        const arquivoArr = [];
+        if (typeof documento.arquivo !== undefined && documento.arquivo) {
+            arquivoArr.push(documento.arquivo);
+        }
+        renderInputFiles(
+            'arquivo-documento-container',
+            'Adicionar arquivo',
+            'arquivo-documento',
+            arquivoArr,
+            false,
+            [],
+            'any'
+        );
+        setInputValue(postIdInput, documento.id);
+    }
+
+    function getDocumentoData(postId, container) {
+        const btnSubmit = container.querySelector('#btn-save-documento');
+        const btnDelete = container.querySelector('#btn-delete-documento');
+        const alertPlaceholder = document.getElementById('modal-alert-placeholder');
+        const ajaxUrl = ajax_object.ajax_url;
+        const data = new FormData();
+        data.append('action', 'pu_get_documento_data');
+        data.append('post_id', postId);
+        fetch(ajaxUrl, {
+            method: 'POST',
+            body: data
+        })
+            .then((response) => response.json())
+            .then((response) => {
+                const status = response.success ? 'success' : 'danger';
+                if (status === 'success') {
+                    setDocumentoData(response.data.lancamento, container);
+                }
+            })
+            .catch((error) => {
+                showAlert(alertPlaceholder, error, 'danger');
+            })
+            .finally(() => {
+                btnSubmit.disabled = false;
+                btnDelete.disabled = false;
+            });
+
+    }
+
+    function modalDocumento() {
+        const modalDocumento = document.getElementById('modal-editar-documento-obra');
+        if (typeof modalDocumento === undefined || !modalDocumento) {
+            return;
+        }
+        modalDocumento.addEventListener('hidden.bs.modal', event => {
+            resetDocumentoInputs();
+            const alertPlaceholder = document.getElementById('modal-alert-placeholder');
+            alertPlaceholder.innerHTML = '';
+        });
+        modalDocumento.addEventListener('show.bs.modal', event => {
+            resetDocumentoInputs();
+            const container = event.target;
+            const postId = event.relatedTarget.dataset.id;
+            const btnSubmit = container.querySelector('#btn-save-documento');
+            const btnDelete = container.querySelector('#btn-delete-documento');
+            btnSubmit.disabled = true;
+            btnDelete.disabled = true;
+            const alertPlaceholder = document.getElementById('modal-alert-placeholder');
+            alertPlaceholder.innerHTML = '';
+            if (typeof postId && postId) {
+                getDocumentoData(postId, container);
+            } else {
+                btnSubmit.disabled = false;
+            }
+        });
+
+        renderInputFiles(
+            'arquivo-documento-container',
+            'Adicionar arquivo',
+            'arquivo-documento',
+            [],
+            false,
+            [],
+            'any'
+        );
+    }
+
+    function editDocumentoObraForm() {
+        const form = document.querySelector('#form-edit-documento-obra');
+        if (typeof form === undefined || !form) {
+            return;
+        }
+        const modalAlertPlaceholder = document.getElementById('modal-alert-placeholder');
+        const tableAlertPlaceholder = document.getElementById('table-alert-placeholder');
+        const newDocumentSuccessMessage = sessionStorage.getItem('showSuccessAlert');
+        if (newDocumentSuccessMessage) {
+            showAlert(modalAlertPlaceholder, newDocumentSuccessMessage, 'success');
+            sessionStorage.removeItem('showSuccessAlert');
+        }
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            if (typeof document.getElementById('form-alert') !== undefined && document.getElementById('form-alert')) {
+                const formAlert = bootstrap.Alert.getOrCreateInstance('#form-alert');
+                formAlert.close();
+            }
+
+            if (!form.checkValidity()) {
+                return;
+            }
+
+            form.classList.add('was-validated');
+            const btnSubmit = form.querySelector('#btn-save-documento');
+
+            if (typeof btnSubmit === undefined || !btnSubmit) {
+                return;
+            }
+
+            if (btnSubmit.disabled) {
+                return;
+            }
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>   <span class="ml-5">Enviando...</span>`;
+            tooglePreloader(true);
+
+            const ajaxUrl = ajax_object.ajax_url;
+            const data = new FormData(form);
+            if ((e.submitter.name === 'delete-post')) {
+                data.append('delete-post', true);
+            } else {
+                data.delete('delete-post');
+            }
+            fetch(ajaxUrl, {
+                method: 'POST',
+                body: data
+            })
+                .then((response) => response.json())
+                .then((response) => {
+                    const status = response.success ? 'success' : 'danger';
+                    let showAlertContainer = modalAlertPlaceholder;
+                    const msg = response.data.msg;
+                    if (status === 'success') {
+                        showAlertContainer = tableAlertPlaceholder;
+                        resetDiarioDaObraInputs();
+                        documentos = response.data.documentos;
+                        filterDocumentos();
+                        const modalDocumento = document.getElementById('modal-editar-documento-obra');
+                        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalDocumento);
+                        modalInstance.hide();
+                    }
+                    showAlert(showAlertContainer, msg, status);
+                })
+                .catch((error) => {
+                    showAlert(modalAlertPlaceholder, error, 'danger');
+                })
+                .finally(() => {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = btnSubmit.dataset.originalText;
+                    form.classList.remove('was-validated');
+                    tooglePreloader(false);
+                });
+        });
+    }
+
+
     window.addEventListener('load', () => {
         highlightInit();
         inputMasks();
@@ -2369,5 +2675,8 @@
         renderDiarioDaObraInputsFile();
         modalDiarioDeObra();
         editDiarioDaObraForm();
+        documentosObraTableInit();
+        modalDocumento();
+        editDocumentoObraForm();
     });
 })();
